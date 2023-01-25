@@ -94,7 +94,7 @@ function init() {
     intersectionPoint = raycastIntersects[0].point;
   });
 
-  /* 3D Scene */
+  /* 3D Objects */
   scene.background = new THREE.Color(0x000005);
 
   const sphereGeometry = new THREE.SphereGeometry(0.01, 16, 16);
@@ -102,7 +102,48 @@ function init() {
   const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   scene.add(sphere);
 
-  /* Sphere position while mouse down */
+  const pathMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+  var pathMesh;
+
+  class QuadraticSegmentCurve extends THREE.Curve {
+    constructor(scale = 1, o = new THREE.Vector3(), t = new THREE.Vector3(), k = 0.0) {
+      super();
+      this.scale = scale;
+      this.o = o;
+      this.t = t;
+      this.k = k;
+    }
+    getPoint(p, optionalTarget = new THREE.Vector3()) {
+
+      const point = optionalTarget;
+
+		  const scale = this.scale, o = this.o, t = this.t, k = this.k;
+
+      p *= k;
+
+      const px = new THREE.Vector3();
+      px.lerpVectors(o, t, p*p);
+
+      const py = new THREE.Vector3();
+      py.lerpVectors(o, t, -1*p*p + (2*p));
+
+      point.set(px.x, py.y, px.z).multiplyScalar(scale);
+      
+		  return point;
+
+    }
+  };
+
+  function generatePath(origin, current, k) {
+
+    let path = new QuadraticSegmentCurve(10, origin, current, k);
+    let pathGeometry = new THREE.TubeGeometry(path, 36, (1-k) * 0.05, 3, false);
+
+    pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
+
+  }
+
+  /* Projectile position while mouse down */
   var mouseDown = false;
 
   window.onmousedown = function() {
@@ -110,6 +151,7 @@ function init() {
     sphere.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
     mouseDown = true;
     launching = false;
+    scene.remove(pathMesh);
 
   }
 
@@ -121,7 +163,7 @@ function init() {
 
   }
 
-  /* Sphere launch animate */
+  /* Launch setup and animate */
   var launchTime;
   const launchDuration = 1000;
   var terminalPoint = new THREE.Vector3();
@@ -157,6 +199,8 @@ function init() {
 
       launching = false;
 
+      scene.remove(pathMesh);
+
     }
 
     else {
@@ -167,6 +211,14 @@ function init() {
       currentPositionY.lerpVectors(originPoint, terminalPoint, -1*k*k+(2*k));
 
       sphere.position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
+
+      const kclamp = Math.max(Math.min(k, 1.0), 0.5);
+
+      sphere.scale.set(kclamp, kclamp, kclamp);
+
+      scene.remove(pathMesh);
+      generatePath(originPoint, terminalPoint, k);
+      scene.add(pathMesh);
 
     }
 
