@@ -44,7 +44,7 @@ function init() {
 
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    1.6,
+    3.6,
     0.1,
     0.1
   );
@@ -107,8 +107,9 @@ function init() {
 
   window.onmousedown = function() {
 
-    sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
+    sphere.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
     mouseDown = true;
+    launching = false;
 
   }
 
@@ -116,22 +117,80 @@ function init() {
 
     mouseDown = false;
 
+    setLaunchPosition();
+
+  }
+
+  /* Sphere launch animate */
+  var launchTime;
+  const launchDuration = 1000;
+  var terminalPoint = new THREE.Vector3();
+  var originPoint = new THREE.Vector3();
+  var launching = false;
+
+  function setLaunchPosition() {
+
+    terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, -10.0);
+
+    let originPointPageX = 0.0;
+    let originPointPageY = -1.0;
+    
+    const originPointRayCast = new THREE.Raycaster();
+    originPointRayCast.setFromCamera(new THREE.Vector2(originPointPageX, originPointPageY), camera);
+    const raycastIntersects = originPointRayCast.intersectObjects(interesectionObjects, true);
+
+    originPoint = raycastIntersects[0].point;
+
+    launchTime = Date.now();
+
+    launching = true;
+
+  }
+
+  function animateLaunch() {
+
+    const currentTime = Date.now() - launchTime;
+
+    const k = currentTime / launchDuration;
+
+    if (k >= 1.0) {
+
+      launching = false;
+
+    }
+
+    else {
+
+      const currentPositionX = new THREE.Vector3();
+      const currentPositionY = new THREE.Vector3();
+      currentPositionX.lerpVectors(originPoint, terminalPoint, k*k);
+      currentPositionY.lerpVectors(originPoint, terminalPoint, -1*k*k+(2*k));
+
+      sphere.position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
+
+    }
+
   }
 
   /* Scene render and animate */
   const clock = new THREE.Clock();
 
-  function animate(time) {
+  function animate() {
+
+    var time = clock.getDelta();
     
     if (mouseDown) sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
+
+    else if (launching) { animateLaunch(); }
     
-    var frame = requestAnimationFrame(animate);
     renderer.render(scene, camera);
 
     composer.render();
+    
+    var frame = requestAnimationFrame(animate);
 
   }
 
-  animate(clock.getDelta());
+  animate();
 
 }
