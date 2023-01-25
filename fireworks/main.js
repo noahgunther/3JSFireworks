@@ -94,16 +94,20 @@ function init() {
     intersectionPoint = raycastIntersects[0].point;
   });
 
-  /* 3D Objects */
+  /* Scene background */
   scene.background = new THREE.Color(0x000005);
 
-  const sphereGeometry = new THREE.SphereGeometry(0.01, 16, 16);
-  const sphereMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 1.0, 1.0) });
-  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  scene.add(sphere);
+  /* 3D object creation functions */
+  function createProjectile(color) {
 
-  const pathMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } );
-  var pathMesh;
+    const projectileGeometry = new THREE.SphereGeometry(0.01, 16, 16);
+    const projectileMaterial = new THREE.MeshBasicMaterial({ color: color });
+    const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
+    scene.add(projectile);
+
+    return projectile;
+
+  }
 
   class QuadraticSegmentCurve extends THREE.Curve {
     constructor(scale = 1, o = new THREE.Vector3(), t = new THREE.Vector3(), k = 0.0) {
@@ -134,24 +138,59 @@ function init() {
     }
   };
 
-  function generatePath(origin, current, k) {
+  function generatePath(origin, current, k, color) {
 
-    let path = new QuadraticSegmentCurve(10, origin, current, k);
-    let pathGeometry = new THREE.TubeGeometry(path, 36, (1-k) * 0.05, 3, false);
+    const pathPoints = new QuadraticSegmentCurve(10, origin, current, k);
+    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, (1-k) * 0.05, 3, false);
+    const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
-    pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
+    const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
+    return pathMesh;
+
+  }
+
+  function createExplosion(p, color, i) {
+
+    activeExplosions[i] = [];
+    explodeTimes[i] = Date.now();
+    explosionOriginPoints[i] = [];
+    explosionTerminalPoints[i] = [];
+
+    const shrapnelCount = 50;
+    function createExplosionComponent() {
+
+      const shrapnelGeometry = new THREE.SphereGeometry(0.005, 6, 6);
+      const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
+      const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
+      scene.add(shrapnel);
+      shrapnel.position.set(p.x, p.y, p.z);
+
+      return shrapnel;
+
+    }
+
+    for (let j = 0; j < shrapnelCount; j++) {
+      activeExplosions[i].push(createExplosionComponent());
+      explosionOriginPoints[i].push(p);
+      explosionTerminalPoints[i].push(new THREE.Vector3(p.x + (Math.random() * 2 - 1), p.y + (Math.random() * 2 - 1), p.z + (Math.random() * 2 - 1)));
+    }
 
   }
 
   /* Projectile position while mouse down */
   var mouseDown = false;
+  var currentProjectile;
+  var activeProjectiles = [];
+  var activePathMeshes = [];
+  var activeExplosions = [];
 
   window.onmousedown = function() {
 
-    sphere.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+    currentProjectile = createProjectile(new THREE.Color(Math.random(), Math.random(), Math.random()));
+
+    currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+
     mouseDown = true;
-    launching = false;
-    scene.remove(pathMesh);
 
   }
 
@@ -159,67 +198,136 @@ function init() {
 
     mouseDown = false;
 
-    setLaunchPosition();
+    let overwritten = false;
+    let index;
+    for (let i = 0; i < activeProjectiles.length; i++) {
+      if (activeProjectiles[i] == null && !overwritten) {
+        activeProjectiles[i] = currentProjectile;
+        overwritten = true;
+        index = i;
+      }
+    }
+    if (!overwritten) {
+      activeProjectiles.push(currentProjectile);
+      index = activeProjectiles.length - 1;
+    }
+
+    setLaunchPosition(index);
+
+    console.log(activeProjectiles.length);
 
   }
 
-  /* Launch setup and animate */
-  var launchTime;
+  /* Launch setup and animation */
   const launchDuration = 1000;
-  var terminalPoint = new THREE.Vector3();
-  var originPoint = new THREE.Vector3();
-  var launching = false;
+  const explodeDuration = 500;
+  var launchTimes = [];
+  var explodeTimes = [];
+  var terminalPoints = [];
+  var originPoints = [];
+  var explosionTerminalPoints = [];
+  var explosionOriginPoints = [];
 
-  function setLaunchPosition() {
+  function setLaunchPosition(i) {
 
-    terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, -10.0);
+    terminalPoints[i] = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
-    let originPointPageX = 0.0;
-    let originPointPageY = -1.0;
+    const originPointPageX = 0.0;
+    const originPointPageY = -1.0;
     
     const originPointRayCast = new THREE.Raycaster();
     originPointRayCast.setFromCamera(new THREE.Vector2(originPointPageX, originPointPageY), camera);
     const raycastIntersects = originPointRayCast.intersectObjects(interesectionObjects, true);
 
-    originPoint = raycastIntersects[0].point;
+    originPoints[i] = raycastIntersects[0].point;
 
-    launchTime = Date.now();
-
-    launching = true;
+    launchTimes[i] = Date.now();
 
   }
 
-  function animateLaunch() {
+  function animateLaunch(i) {
 
-    const currentTime = Date.now() - launchTime;
+    const currentTime = Date.now() - launchTimes[i];
 
     const k = currentTime / launchDuration;
 
-    if (k >= 1.0) {
-
-      launching = false;
-
-      scene.remove(pathMesh);
-
-    }
-
-    else {
+    if (k < 1.0) {
 
       const currentPositionX = new THREE.Vector3();
       const currentPositionY = new THREE.Vector3();
-      currentPositionX.lerpVectors(originPoint, terminalPoint, k*k);
-      currentPositionY.lerpVectors(originPoint, terminalPoint, -1*k*k+(2*k));
+      currentPositionX.lerpVectors(originPoints[i], terminalPoints[i], k*k);
+      currentPositionY.lerpVectors(originPoints[i], terminalPoints[i], -1*k*k+(2*k));
 
-      sphere.position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
+      activeProjectiles[i].position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
 
       const kclamp = Math.max(Math.min(k, 1.0), 0.5);
 
-      sphere.scale.set(kclamp, kclamp, kclamp);
+      activeProjectiles[i].scale.set(kclamp, kclamp, kclamp);
 
-      scene.remove(pathMesh);
-      generatePath(originPoint, terminalPoint, k);
-      scene.add(pathMesh);
+      if (activePathMeshes[i]) { 
+        scene.remove(activePathMeshes[i]);
+        activePathMeshes[i].geometry.dispose();
+        activePathMeshes[i].material.dispose();
+      }
+      activePathMeshes[i] = generatePath(originPoints[i], terminalPoints[i], k, activeProjectiles[i].material.color);
+      scene.add(activePathMeshes[i]);
 
+    }
+
+    else if (activeProjectiles[i] != null) {
+
+      createExplosion(activeProjectiles[i].position, new THREE.Color(Math.random(), Math.random(), Math.random()), i);
+
+      scene.remove(activePathMeshes[i]);
+      scene.remove(activeProjectiles[i]);
+
+      activePathMeshes[i].geometry.dispose();
+      activePathMeshes[i].material.dispose();
+
+      activeProjectiles[i].geometry.dispose();
+      activeProjectiles[i].material.dispose();
+
+      activePathMeshes[i] = null;
+      activeProjectiles[i] = null;
+
+    }
+
+  }
+
+  function animateExplosion(i) {
+
+    const currentTime = Date.now() - explodeTimes[i];
+
+    const k = currentTime / explodeDuration;
+
+    for (let j = 0; j < activeExplosions[i].length; j++) {
+
+      if (k < 1.0) {
+
+        const currentPositionXZ = new THREE.Vector3();
+        //const currentPositionY = new THREE.Vector3();
+        currentPositionXZ.lerpVectors(explosionOriginPoints[i][j], explosionTerminalPoints[i][j], k);
+        //currentPositionY.lerpVectors(originPoints[i], terminalPoints[i], -1*k*k+(2*k));
+  
+        activeExplosions[i][j].position.set(currentPositionXZ.x, currentPositionXZ.y, currentPositionXZ.z);
+
+        const kclamp = Math.max(Math.min(1.0-k, 1.0), 0.5);
+
+        activeExplosions[i][j].scale.set(kclamp, kclamp, kclamp);
+  
+      }
+  
+      else if (activeExplosions[i][j] != null) {
+
+        scene.remove(activeExplosions[i][j]);
+
+        activeExplosions[i][j].geometry.dispose();
+        activeExplosions[i][j].material.dispose();
+  
+        activeExplosions[i][j] = null;
+  
+      }
+      
     }
 
   }
@@ -231,9 +339,15 @@ function init() {
 
     var time = clock.getDelta();
     
-    if (mouseDown) sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
+    if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
-    else if (launching) { animateLaunch(); }
+    for (let i = 0; i < activeProjectiles.length; i++) {
+      animateLaunch(i);
+    }
+
+    for (let i = 0; i < activeExplosions.length; i++) {
+      animateExplosion(i);
+    }
     
     renderer.render(scene, camera);
 
