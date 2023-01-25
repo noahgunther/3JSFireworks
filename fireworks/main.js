@@ -2,7 +2,10 @@
 import './style.css'
 
 import * as THREE from 'three';
-import { Raycaster } from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 
 /* Start threejs scene when window loaded */
 window.addEventListener("load", init, false);
@@ -21,7 +24,6 @@ function init() {
     powerPreference: "high-performance"
   });
 
-  
   renderer.setPixelRatio(window.devicePixelRatio);
 
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -32,7 +34,27 @@ function init() {
   renderer.render(scene, camera);
 
   const size = renderer.getDrawingBufferSize( new THREE.Vector2() );
-  const renderTarget = new THREE.WebGLRenderTarget( size.width, size.height, { samples: 2 } );
+  const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, { samples: 3 });
+
+  /* Post Processing */
+  const composer = new EffectComposer(renderer, renderTarget);
+
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.6,
+    0.1,
+    0.1
+  );
+  composer.addPass(bloomPass);
+
+  const afterimagePass = new AfterimagePass(0.98);
+  composer.addPass(afterimagePass);
+  
+  composer.setPixelRatio(window.devicePixelRatio);
+  composer.setSize(window.innerWidth, window.innerHeight);
 
   const body = document.getElementById('body');
 
@@ -43,6 +65,8 @@ function init() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    composer.setSize(window.innerWidth, window.innerHeight);
 
   };
 
@@ -73,20 +97,38 @@ function init() {
   /* 3D Scene */
   scene.background = new THREE.Color(0x000005);
 
-  const sphereGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-  const sphereMaterial = new THREE.MeshBasicMaterial();
+  const sphereGeometry = new THREE.SphereGeometry(0.01, 16, 16);
+  const sphereMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 1.0, 1.0) });
   const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   scene.add(sphere);
+
+  /* Sphere position while mouse down */
+  var mouseDown = false;
+
+  window.onmousedown = function() {
+
+    sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
+    mouseDown = true;
+
+  }
+
+  window.onmouseup = function() {
+
+    mouseDown = false;
+
+  }
 
   /* Scene render and animate */
   const clock = new THREE.Clock();
 
   function animate(time) {
     
-    sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
+    if (mouseDown) sphere.position.set(intersectionPoint.x, intersectionPoint.y, -10.0);
     
     var frame = requestAnimationFrame(animate);
     renderer.render(scene, camera);
+
+    composer.render();
 
   }
 
