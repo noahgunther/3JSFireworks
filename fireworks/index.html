@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="./graphics/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fireworks!</title>
   </head>
@@ -10,5 +10,16 @@
     <div id="app"></div>
     <script type="module" src="/main.js"></script>
     <canvas id="bg"></canvas>
+    <div id="outliner">
+      <div id="palette">
+        COLORS:<br/>
+        <div id="color1" class="colorpicker"></div>
+        <div id="color2" class="colorpicker"></div>
+        SCALE:
+        <div id="scaleminus" class="scalecontrols">-</div>
+        <div id="scalevalue" class="scalecontrols">10</div>
+        <div id="scaleplus" class="scalecontrols">+</div>
+      </div>
+    </div>
   </body>
 </html>

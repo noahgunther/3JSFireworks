@@ -18,6 +18,8 @@ function init() {
 
   const camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+  const canvas = document.getElementById('bg');
+
   const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
     antialias: false,
@@ -234,7 +236,7 @@ function init() {
   var activeExplosions = [];
   var activeExplosionPathMeshes = [];
 
-  window.onmousedown = function() {
+  canvas.onmousedown = function() {
 
     currentProjectile = createProjectile(generateRandomColor());
 
@@ -244,7 +246,7 @@ function init() {
 
   }
 
-  window.onmouseup = function() {
+  canvas.onmouseup = function() {
 
     mouseDown = false;
 
