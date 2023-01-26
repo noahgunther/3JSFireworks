@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fireworks!</title>
   </head>
-  <body>
+  <body id="body">
     <div id="app"></div>
     <script type="module" src="/main.js"></script>
     <canvas id="bg"></canvas>
     <div id="outliner">
       <div id="palette">
-        COLORS:<br/>
-        <div id="color1" class="colorpicker"></div>
-        <div id="color2" class="colorpicker"></div>
-        SCALE:
+        <div id="colorslabel">COLORS:</div>
+        <input id="color0" class="colorpicker" type="color" value="#ffffff"></input>
+        <input id="color1" class="colorpicker" type="color" value="#00ffff"></input>
+        <div id="scalelabel">SCALE:</div>
         <div id="scaleminus" class="scalecontrols">-</div>
-        <div id="scalevalue" class="scalecontrols">10</div>
+        <div id="scalevalue" class="scalecontrols">o</div>
         <div id="scaleplus" class="scalecontrols">+</div>
       </div>
     </div>

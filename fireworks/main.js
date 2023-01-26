@@ -58,8 +58,6 @@ function init() {
   composer.setPixelRatio(window.devicePixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);
 
-  const body = document.getElementById('body');
-
   /* Resize threejs scene on window resize */
   window.onresize = function () {
 
@@ -98,6 +96,84 @@ function init() {
 
   /* Scene background */
   scene.background = new THREE.Color(0x000005);
+
+  /* Palette options */
+  const body = document.getElementById('body');
+
+  const colorPicker0 = document.getElementById("color0");
+  const colorPicker1 = document.getElementById("color1");
+  var color0 = new THREE.Color(1.0, 1.0, 1.0);
+  var color1 = new THREE.Color(0.0, 0.7, 0.5);
+
+  function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  
+  function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  }
+
+  function updateColorPickers() {
+
+    colorPicker0.value = rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255));
+    colorPicker1.value = rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255));
+
+  }
+
+  updateColorPickers();
+
+  function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: Number((parseInt(result[1], 16) / 255).toFixed(2)),
+      g: Number((parseInt(result[2], 16) / 255).toFixed(2)),
+      b: Number((parseInt(result[3], 16) / 255).toFixed(2))
+    } : null;
+  }
+
+  colorPicker0.addEventListener("input", (event) => {
+    color0 = hexToRgb(colorPicker0.value);
+    color0 = new THREE.Color(color0.r, color0.g, color0.b);
+  });
+
+  colorPicker1.addEventListener("input", (event) => {
+    color1 = hexToRgb(colorPicker1.value);
+    color1 = new THREE.Color(color1.r, color1.g, color1.b);
+  });
+
+  const scalePickerDisplayValue = document.getElementById("scalevalue");
+  const scalePickerMinus = document.getElementById("scaleminus");
+  const scalePickerPlus = document.getElementById("scaleplus");
+  var scaleValue = 1.0;
+  const scaleValueMin = 0.5;
+  const scaleValueMax = 3.0;
+
+  scalePickerMinus.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  scalePickerMinus.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  scalePickerMinus.onclick = function() {
+    if (scaleValue > scaleValueMin) {
+      scaleValue -= 0.25;
+      scalePickerDisplayValue.style.setProperty('font-size', scaleValue * 100.0 + '%');
+    }
+  }
+
+  scalePickerPlus.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  scalePickerPlus.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  scalePickerPlus.onclick = function() {
+    if (scaleValue < scaleValueMax) {
+      scaleValue += 0.25;
+      scalePickerDisplayValue.style.setProperty('font-size', scaleValue * 100.0 + '%');
+    }
+  }
 
   /* 3D object creation functions */
   function createProjectile(color) {
@@ -160,7 +236,7 @@ function init() {
     activeExplosionPathMeshes[i] = [];
 
     const shrapnelCount = 20;
-    const radiusRandom = Math.max(Math.random() * 0.25, 0.15);
+    const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
 
     function createExplosionComponent() {
 
@@ -200,7 +276,7 @@ function init() {
 
       const pxyz = new THREE.Vector3();
       pxyz.lerpVectors(o, t, p);
-      pxyz.y -= p*p*0.075;
+      pxyz.y -= p*p*0.075*scaleValue;
 
       point.set(pxyz.x, pxyz.y, pxyz.z).multiplyScalar(scale);
       
@@ -220,14 +296,6 @@ function init() {
 
   }
 
-  function generateRandomColor() {
-
-    const color = new THREE.Color(Math.max(Math.random(), 0.3), Math.max(Math.random(), 0.3), Math.max(Math.random(), 0.3));
-
-    return color;
-
-  }
-
   /* Projectile position while mouse down */
   var mouseDown = false;
   var currentProjectile;
@@ -238,7 +306,7 @@ function init() {
 
   canvas.onmousedown = function() {
 
-    currentProjectile = createProjectile(generateRandomColor());
+    currentProjectile = createProjectile(color0);
 
     currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
@@ -248,23 +316,27 @@ function init() {
 
   canvas.onmouseup = function() {
 
-    mouseDown = false;
+    if (mouseDown) {
+      
+      mouseDown = false;
 
-    let overwritten = false;
-    let index;
-    for (let i = 0; i < activeProjectiles.length; i++) {
-      if (activeProjectiles[i] == null && !overwritten) {
-        activeProjectiles[i] = currentProjectile;
-        overwritten = true;
-        index = i;
+      let overwritten = false;
+      let index;
+      for (let i = 0; i < activeProjectiles.length; i++) {
+        if (activeProjectiles[i] == null && !overwritten) {
+          activeProjectiles[i] = currentProjectile;
+          overwritten = true;
+          index = i;
+        }
       }
-    }
-    if (!overwritten) {
-      activeProjectiles.push(currentProjectile);
-      index = activeProjectiles.length - 1;
-    }
+      if (!overwritten) {
+        activeProjectiles.push(currentProjectile);
+        index = activeProjectiles.length - 1;
+      }
 
-    setLaunchPosition(index);
+      setLaunchPosition(index);
+
+    }
 
   }
 
@@ -326,7 +398,7 @@ function init() {
 
     else if (activeProjectiles[i] != null) {
 
-      createExplosion(activeProjectiles[i].position, generateRandomColor(), i);
+      createExplosion(activeProjectiles[i].position, color1, i);
 
       scene.remove(activePathMeshes[i]);
       scene.remove(activeProjectiles[i]);
@@ -356,7 +428,7 @@ function init() {
 
         const currentPosition = new THREE.Vector3();
         currentPosition.lerpVectors(explosionOriginPoints[i][j], explosionTerminalPoints[i][j], k);
-        currentPosition.y -= k*k*0.075;
+        currentPosition.y -= k*k*0.075*scaleValue;
   
         activeExplosions[i][j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
 

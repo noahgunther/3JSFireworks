@@ -23,6 +23,7 @@ body{
   overflow: hidden;
   pointer-events: all;
   z-index: 1;
+  user-select: none;
 }
 
 #palette {
@@ -35,30 +36,72 @@ body{
   padding: 10%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 160%;
-  line-height: 260%;
   color: rgb(128, 128, 128);
+  overflow: hidden;
+}
+
+#colorslabel {
+  position: absolute;
+  top: 20%;
+  left: 10%;
 }
 
 .colorpicker {
   position: absolute;
   top: 25%;
   transform: translate(0%, -50%);
-  width: 10%;
-  height: 15%;
+  width: 50px;
+  height: 50px;
   border: 2px solid rgb(128, 128, 128);
-  border-radius: 25%;
+  cursor: pointer;
+}
+
+#color0 {
+  margin-left: 38%;
 }
 
 #color1 {
-  right: 50%;
+  margin-left: 55%;
 }
 
-#color2 {
-  right: 35%;
+#scalelabel {
+  position: absolute;
+  top: 50%;
+  left: 10%;
 }
 
 .scalecontrols {
-  display: inline;
-  font-weight: bold;
-  font-size: 160%;
+  position: absolute;
+  top: 50%;
+  font-size: 100%;
+}
+
+#scaleminus {
+  transform: translate(-50%, -50%);
+  margin-left: 42%;
+  top: 55%;
+  border: 2px solid rgb(128, 128, 128);
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 0px;
+  padding-bottom: 3px;
+}
+
+#scalevalue {
+  font-size: 100%;
+  margin-left: 50%;
+  top: 54%;
+  left: 10%;
+  transform: translate(-50%, -50%);
+}
+
+#scaleplus {
+  transform: translate(-50%, -50%);
+  margin-left: 62%;
+  top: 55%;
+  border: 2px solid rgb(128, 128, 128);
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-top: 0px;
+  padding-bottom: 3px;
 }
