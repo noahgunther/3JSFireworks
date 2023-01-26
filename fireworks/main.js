@@ -100,7 +100,7 @@ function init() {
   /* 3D object creation functions */
   function createProjectile(color) {
 
-    const projectileGeometry = new THREE.SphereGeometry(0.0025, 16, 16);
+    const projectileGeometry = new THREE.SphereGeometry(0.005, 16, 16);
     const projectileMaterial = new THREE.MeshBasicMaterial({ color: color });
     const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
     scene.add(projectile);
@@ -141,7 +141,7 @@ function init() {
   function generateProjectilePath(origin, current, k, color) {
 
     const pathPoints = new ProjectileSegmentCurve(10, origin, current, k);
-    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.02, 0.01), 3, false);
+    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.01, 0.0025), 3, false);
     const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
     const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
@@ -158,11 +158,11 @@ function init() {
     activeExplosionPathMeshes[i] = [];
 
     const shrapnelCount = 20;
-    const radiusRandom = Math.max(Math.random() * 0.65, 0.25);
+    const radiusRandom = Math.max(Math.random() * 0.25, 0.15);
 
     function createExplosionComponent() {
 
-      const shrapnelGeometry = new THREE.SphereGeometry(0.0035, 6, 6);
+      const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 6, 6);
       const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
       const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
       scene.add(shrapnel);
@@ -198,7 +198,7 @@ function init() {
 
       const pxyz = new THREE.Vector3();
       pxyz.lerpVectors(o, t, p);
-      pxyz.y -= p*p*0.2;
+      pxyz.y -= p*p*0.075;
 
       point.set(pxyz.x, pxyz.y, pxyz.z).multiplyScalar(scale);
       
@@ -210,7 +210,7 @@ function init() {
   function generateExplosionPath(origin, current, k, color) {
 
     const pathPoints = new ExplosionSegmentCurve(10, origin, current, k);
-    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max(k * 0.02, 0.01), 3, false);
+    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.05, 0.001), 3, false);
     const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
     const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
@@ -308,7 +308,7 @@ function init() {
 
       activeProjectiles[i].position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
 
-      const kclamp = Math.max(Math.min(k, 1.0), 0.5);
+      const kclamp = Math.max(Math.min(k, 1.0), 0.5) * 0.1;
 
       activeProjectiles[i].scale.set(kclamp, kclamp, kclamp);
 
@@ -354,7 +354,7 @@ function init() {
 
         const currentPosition = new THREE.Vector3();
         currentPosition.lerpVectors(explosionOriginPoints[i][j], explosionTerminalPoints[i][j], k);
-        currentPosition.y -= k*k*0.2;
+        currentPosition.y -= k*k*0.075;
   
         activeExplosions[i][j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
 
