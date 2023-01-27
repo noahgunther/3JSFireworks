@@ -217,6 +217,45 @@ function init() {
 
   }
 
+  /* Firework class */
+  class Firework {
+    constructor(
+      active,
+      launchDuration, 
+      launchTime, 
+      originPoint, 
+      terminalPoint, 
+      explodeDuration, 
+      explodeTime,
+      explosionTerminalPoints,
+      projectileMesh,
+      pathMesh,
+      explosionMeshes,
+      explosionPathMeshes,
+      color0,
+      color1,
+      explosionScale,
+      position
+    ) {
+      this.active = active;
+      this.launchDuration = launchDuration;
+      this.launchTime = launchTime;
+      this.originPoint = originPoint;
+      this.terminalPoint = terminalPoint;
+      this.explodeDuration = explodeDuration;
+      this.explodeTime = explodeTime;
+      this.explosionTerminalPoints = explosionTerminalPoints;
+      this.projectileMesh = projectileMesh;
+      this.pathMesh = pathMesh;
+      this.explosionMeshes = explosionMeshes;
+      this.explosionPathMeshes = explosionPathMeshes;
+      this.color0 = color0;
+      this.color1 = color1;
+      this.explosionScale = explosionScale;
+      this.position = position;
+    }
+  }
+
   /* 3D object creation functions */
   function createProjectile(color) {
 
@@ -269,37 +308,6 @@ function init() {
 
   }
 
-  function createExplosion(p, color, i) {
-
-    activeExplosions[i] = [];
-    explodeTimes[i] = Date.now() + launchDuration;
-    explosionOriginPoints[i] = [];
-    explosionTerminalPoints[i] = [];
-    activeExplosionPathMeshes[i] = [];
-
-    const shrapnelCount = 20;
-    const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValues[i];
-
-    function createExplosionComponent() {
-
-      const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 6, 6);
-      const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
-      const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
-      scene.add(shrapnel);
-      shrapnel.position.set(p.x, p.y, p.z);
-
-      return shrapnel;
-
-    }
-
-    for (let j = 0; j < shrapnelCount; j++) {
-      activeExplosions[i].push(createExplosionComponent());
-      explosionOriginPoints[i].push(p);
-      explosionTerminalPoints[i].push(new THREE.Vector3(p.x + (Math.random() * 2 - 1) * radiusRandom, p.y + (Math.random() * 2 - 1) * radiusRandom, p.z + (Math.random() * 2 - 1) * radiusRandom));
-    }
-
-  }
-
   class ExplosionSegmentCurve extends THREE.Curve {
     constructor(scale = 1, o = new THREE.Vector3(), t = new THREE.Vector3(), k = 0.0, sv = 1.0) {
       super();
@@ -339,17 +347,10 @@ function init() {
 
   }
 
-  /* Projectile position while mouse down */
+  /* Firework creation */
   var mouseDown = false;
   var currentProjectile;
-  var activeProjectiles = [];
-  var activePathMeshes = [];
-  var activeExplosions = [];
-  var activeExplosionPathMeshes = [];
-  var color0Array = [];
-  var color1Array = [];
-  var scaleValues = [];
-  var positionValues = [];
+  var fireworks = [];
 
   canvas.onmousedown = function() {
 
@@ -359,14 +360,8 @@ function init() {
       updateColorPickers();
       scaleValue = randomizeScale();
     }
-    
-    color0Array.push(color0);
-    color1Array.push(color1);
-    scaleValues.push(scaleValue);
 
-    let index = activeProjectiles.length;
-
-    currentProjectile = createProjectile(color0Array[index]);
+    currentProjectile = createProjectile(color0);
 
     currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
@@ -380,34 +375,77 @@ function init() {
       
       mouseDown = false;
 
-      let index = activeProjectiles.length;
-
-      activeProjectiles.push(currentProjectile);
-
-      setLaunchPosition(index);
-
-      positionValues.push(new THREE.Vector2(mousePagePosition.x, mousePagePosition.y));
       updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
-      createExplosion(activeProjectiles[index].position, color1Array[index], index);
+      const launchDuration = 1000;
+      const explodeDuration = 1000;
+
+      const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+      let explosionMeshes = [];
+      let explosionPathMeshes = [];
+      let terminalPoints = [];
+      function createExplosion(p, color) {
+
+        const shrapnelCount = 20;
+        const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
+
+        for (let j = 0; j < shrapnelCount; j++) {
+
+          explosionMeshes.push(createExplosionComponent());
+
+          explosionPathMeshes.push(null);
+
+          terminalPoints.push(new THREE.Vector3(
+            p.x + (Math.random() * 2 - 1) * radiusRandom,
+            p.y + (Math.random() * 2 - 1) * radiusRandom, 
+            p.z + (Math.random() * 2 - 1) * radiusRandom
+          ));
+
+        }
+
+        function createExplosionComponent() {
+
+          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 6, 6);
+          const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
+          const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
+          scene.add(shrapnel);
+          shrapnel.position.set(p.x, p.y, p.z);
+
+          return shrapnel;
+
+        }
+
+      }
+
+      createExplosion(terminalPoint, color1);
+
+      fireworks.push(
+        new Firework(
+          true,
+          launchDuration,
+          Date.now(),
+          setLaunchPosition(),
+          terminalPoint,
+          explodeDuration,
+          Date.now() + explodeDuration,
+          terminalPoints,
+          currentProjectile,
+          null,
+          explosionMeshes,
+          explosionPathMeshes,
+          color0,
+          color1,
+          scaleValue,
+          new THREE.Vector2(mousePagePosition.x, mousePagePosition.y)
+        )
+      );
 
     }
 
   }
 
   /* Launch setup and animation */
-  const launchDuration = 1000;
-  const explodeDuration = 500;
-  var launchTimes = [];
-  var explodeTimes = [];
-  var terminalPoints = [];
-  var originPoints = [];
-  var explosionTerminalPoints = [];
-  var explosionOriginPoints = [];
-
-  function setLaunchPosition(i) {
-
-    terminalPoints[i] = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+  function setLaunchPosition() {
 
     const originPointPageX = 0.0;
     const originPointPageY = -1.0;
@@ -416,102 +454,113 @@ function init() {
     originPointRayCast.setFromCamera(new THREE.Vector2(originPointPageX, originPointPageY), camera);
     const raycastIntersects = originPointRayCast.intersectObjects(interesectionObjects, true);
 
-    originPoints[i] = raycastIntersects[0].point;
-
-    launchTimes[i] = Date.now();
+    return raycastIntersects[0].point;
 
   }
 
-  function animateLaunch(i) {
+  function animateFirework(index) {
 
-    const currentTime = Date.now() - launchTimes[i];
+    if (fireworks[index].active) {
 
-    const k = currentTime / launchDuration;
+      const currentTime = Date.now() - fireworks[index].launchTime;
 
-    if (k < 1.0) {
+      const k = currentTime / fireworks[index].launchDuration;
 
-      const currentPositionX = new THREE.Vector3();
-      const currentPositionY = new THREE.Vector3();
-      currentPositionX.lerpVectors(originPoints[i], terminalPoints[i], k*k);
-      currentPositionY.lerpVectors(originPoints[i], terminalPoints[i], -1*k*k+(2*k));
+      if (k < 1.0) {
 
-      activeProjectiles[i].position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
+        const currentPositionX = new THREE.Vector3();
+        const currentPositionY = new THREE.Vector3();
+        currentPositionX.lerpVectors(fireworks[index].originPoint, fireworks[index].terminalPoint, k*k);
+        currentPositionY.lerpVectors(fireworks[index].originPoint, fireworks[index].terminalPoint, -1*k*k+(2*k));
 
-      const kclamp = Math.max(Math.min(k, 1.0), 0.5) * 0.1;
+        fireworks[index].projectileMesh.position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
 
-      activeProjectiles[i].scale.set(kclamp, kclamp, kclamp);
+        const kclamp = Math.max(Math.min(k, 1.0), 0.5) * 0.1;
+        fireworks[index].projectileMesh.scale.set(kclamp, kclamp, kclamp);
 
-      if (activePathMeshes[i]) { 
-        scene.remove(activePathMeshes[i]);
-        activePathMeshes[i].geometry.dispose();
-        activePathMeshes[i].material.dispose();
+        if (fireworks[index].pathMesh != null) { 
+          scene.remove(fireworks[index].pathMesh);
+          fireworks[index].pathMesh.geometry.dispose();
+          fireworks[index].pathMesh.material.dispose();
+        }
+        fireworks[index].pathMesh = generateProjectilePath(fireworks[index].originPoint, fireworks[index].terminalPoint, k, fireworks[index].color0);
+        scene.add(fireworks[index].pathMesh);
+
       }
-      activePathMeshes[i] = generateProjectilePath(originPoints[i], terminalPoints[i], k, activeProjectiles[i].material.color);
-      scene.add(activePathMeshes[i]);
 
-    }
+      else if (fireworks[index].projectileMesh != null) {
 
-    else if (activeProjectiles[i] != null) {
+        scene.remove(fireworks[index].pathMesh);
+        scene.remove(fireworks[index].projectileMesh);
 
-      scene.remove(activePathMeshes[i]);
-      scene.remove(activeProjectiles[i]);
+        fireworks[index].pathMesh.geometry.dispose();
+        fireworks[index].pathMesh.material.dispose();
 
-      activePathMeshes[i].geometry.dispose();
-      activePathMeshes[i].material.dispose();
+        fireworks[index].projectileMesh.geometry.dispose();
+        fireworks[index].projectileMesh.material.dispose();
 
-      activeProjectiles[i].geometry.dispose();
-      activeProjectiles[i].material.dispose();
+        fireworks[index].pathMesh = null;
+        fireworks[index].projectileMesh = null;
 
-      activePathMeshes[i] = null;
-      activeProjectiles[i] = null;
+      }
+
+      animateExplosion(index);
 
     }
 
   }
 
-  function animateExplosion(i) {
+  function animateExplosion(index) {
 
-    const currentTime = Date.now() - explodeTimes[i];
+    const currentTime = Date.now() - fireworks[index].explodeTime;
 
-    const k = currentTime / explodeDuration;
+    const k = currentTime / fireworks[index].explodeDuration;
 
-    for (let j = 0; j < activeExplosions[i].length; j++) {
+    for (let j = 0; j < fireworks[index].explosionMeshes.length; j++) {
 
       if (k < 1.0 && k >= 0.0) {
 
         const currentPosition = new THREE.Vector3();
-        currentPosition.lerpVectors(explosionOriginPoints[i][j], explosionTerminalPoints[i][j], k);
-        currentPosition.y -= k*k*0.075*scaleValues[i];
+        currentPosition.lerpVectors(fireworks[index].terminalPoint, fireworks[index].explosionTerminalPoints[j], k);
+        currentPosition.y -= k*k*0.075*fireworks[index].explosionScale;
   
-        activeExplosions[i][j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
+        fireworks[index].explosionMeshes[j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
 
         const kclamp = Math.max(Math.min(1.0-k, 1.0), 0.5);
+        fireworks[index].explosionMeshes[j].scale.set(kclamp, kclamp, kclamp);
 
-        activeExplosions[i][j].scale.set(kclamp, kclamp, kclamp);
-
-        if (activeExplosionPathMeshes[i][j]) { 
-          scene.remove(activeExplosionPathMeshes[i][j]);
-          activeExplosionPathMeshes[i][j].geometry.dispose();
-          activeExplosionPathMeshes[i][j].material.dispose();
+        if (fireworks[index].explosionPathMeshes[j] != null) { 
+          scene.remove(fireworks[index].explosionPathMeshes[j]);
+          fireworks[index].explosionPathMeshes[j].geometry.dispose();
+          fireworks[index].explosionPathMeshes[j].material.dispose();
         }
-        activeExplosionPathMeshes[i][j] = generateExplosionPath(explosionOriginPoints[i][j], explosionTerminalPoints[i][j], k, activeExplosions[i][j].material.color, scaleValues[i]);
-        scene.add(activeExplosionPathMeshes[i][j]);
+        fireworks[index].explosionPathMeshes[j] = generateExplosionPath(
+          fireworks[index].terminalPoint, 
+          fireworks[index].explosionTerminalPoints[j], 
+          k, 
+          fireworks[index].color1, 
+          fireworks[index].explosionScale
+        );
+
+        scene.add(fireworks[index].explosionPathMeshes[j]);
   
       }
   
-      else if (activeExplosions[i][j] != null && k > 0.0) {
+      else if (fireworks[index].explosionMeshes[j] != null && k > 0.0) {
 
-        scene.remove(activeExplosions[i][j]);
-        scene.remove(activeExplosionPathMeshes[i][j]);
+        scene.remove(fireworks[index].explosionPathMeshes[j]);
+        scene.remove(fireworks[index].explosionMeshes[j]);
 
-        activeExplosions[i][j].geometry.dispose();
-        activeExplosionPathMeshes[i][j].geometry.dispose();
+        fireworks[index].explosionPathMeshes[j].geometry.dispose();
+        fireworks[index].explosionPathMeshes[j].material.dispose();
+        
+        fireworks[index].explosionMeshes[j].geometry.dispose();
+        fireworks[index].explosionMeshes[j].material.dispose();
+        
+        fireworks[index].explosionPathMeshes[j] = null;
+        fireworks[index].explosionMeshes[j] = null;
 
-        activeExplosions[i][j].material.dispose();
-        activeExplosionPathMeshes[i][j].material.dispose();
-  
-        activeExplosions[i][j] = null;
-        activeExplosionPathMeshes[i][j] = null;
+        fireworks[index].active = false;
   
       }
       
@@ -528,12 +577,8 @@ function init() {
     
     if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
-    for (let i = 0; i < activeProjectiles.length; i++) {
-      animateLaunch(i);
-    }
-
-    for (let i = 0; i < activeExplosions.length; i++) {
-      animateExplosion(i);
+    for (let i = 0; i < fireworks.length; i++) {
+      animateFirework(i);
     }
     
     renderer.render(scene, camera);
