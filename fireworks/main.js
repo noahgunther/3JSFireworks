@@ -378,7 +378,7 @@ function init() {
       updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       const launchDuration = 1000;
-      const explodeDuration = 1000;
+      const explodeDuration = 500;
 
       const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
       let explosionMeshes = [];
@@ -427,7 +427,7 @@ function init() {
           setLaunchPosition(),
           terminalPoint,
           explodeDuration,
-          Date.now() + explodeDuration,
+          Date.now() + launchDuration,
           terminalPoints,
           currentProjectile,
           null,
