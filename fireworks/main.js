@@ -210,10 +210,10 @@ function init() {
 
   function updatePositionDisplayValues(x, y) {
 
-    x = Math.round((x / 2 + 0.5) * 100);
-    y = Math.round((y / 2 + 0.5) * 100);
+    x = (Math.round((x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
+    y = (Math.round((y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
 
-    positionDisplayValues.innerHTML = "POSITION:&nbsp;&nbsp;&nbsp;&nbsp;X: " + x + " Y: " + y;
+    positionDisplayValues.innerHTML = "X: " + x + "% Y: " + y + "%";
 
   }
 
