@@ -118,3 +118,9 @@ body{
   padding-top: 0px;
   padding-bottom: 3px;
 }
+
+#positionvalues {
+  position: absolute;
+  top: 80%;
+  left: 10%;
+}

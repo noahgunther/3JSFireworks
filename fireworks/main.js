@@ -97,7 +97,7 @@ function init() {
   /* Scene background */
   scene.background = new THREE.Color(0x000005);
 
-  /* Firework options */
+  /* Firework parameters */
   const body = document.getElementById('body');
 
   // Random parameters toggle
@@ -203,6 +203,18 @@ function init() {
       scaleValue += 0.25;
       scalePickerDisplayValue.style.setProperty('font-size', scaleValue * 100.0 + '%');
     }
+  }
+
+  // Position values (read-only)
+  const positionDisplayValues = document.getElementById("positionvalues");
+
+  function updatePositionDisplayValues(x, y) {
+
+    x = Math.round((x / 2 + 0.5) * 100);
+    y = Math.round((y / 2 + 0.5) * 100);
+
+    positionDisplayValues.innerHTML = "POSITION:&nbsp;&nbsp;&nbsp;&nbsp;X: " + x + " Y: " + y;
+
   }
 
   /* 3D object creation functions */
@@ -337,6 +349,7 @@ function init() {
   var color0Array = [];
   var color1Array = [];
   var scaleValues = [];
+  var positionValues = [];
 
   canvas.onmousedown = function() {
 
@@ -372,6 +385,9 @@ function init() {
       activeProjectiles.push(currentProjectile);
 
       setLaunchPosition(index);
+
+      positionValues.push(new THREE.Vector2(mousePagePosition.x, mousePagePosition.y));
+      updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       createExplosion(activeProjectiles[index].position, color1Array[index], index);
 
