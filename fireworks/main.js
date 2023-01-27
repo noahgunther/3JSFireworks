@@ -97,6 +97,12 @@ function init() {
   /* Scene background */
   scene.background = new THREE.Color(0x000005);
 
+  /* Timeline */
+  var timelinePosition = 0;
+  var timelineLength = 10000;
+  var recording = true;
+  var timelinePlaying = true;
+
   /* Firework parameters */
   const body = document.getElementById('body');
 
@@ -124,7 +130,6 @@ function init() {
   }
 
   randomParamsToggle.addEventListener("change", function() {
-    console.log(this.checked)
     randomizeParamsBool = randomParamsToggle.checked;
   });
 
@@ -221,6 +226,8 @@ function init() {
   class Firework {
     constructor(
       active,
+      recorded,
+      playLaunchOneShot,
       launchDuration, 
       launchTime, 
       originPoint, 
@@ -238,6 +245,8 @@ function init() {
       position
     ) {
       this.active = active;
+      this.recorded = recorded;
+      this.playLaunchOneShot = playLaunchOneShot;
       this.launchDuration = launchDuration;
       this.launchTime = launchTime;
       this.originPoint = originPoint;
@@ -300,7 +309,7 @@ function init() {
   function generateProjectilePath(origin, current, k, color) {
 
     const pathPoints = new ProjectileSegmentCurve(10, origin, current, k);
-    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.01, 0.0025), 3, false);
+    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.01, 0.01), 3, false);
     const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
     const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
@@ -422,12 +431,14 @@ function init() {
       fireworks.push(
         new Firework(
           true,
+          recording,
+          recording,
           launchDuration,
-          Date.now(),
+          recording ? Date.now() - launchDuration : Date.now(),
           setLaunchPosition(),
           terminalPoint,
           explodeDuration,
-          Date.now() + launchDuration,
+          recording ? Date.now() : Date.now() + launchDuration,
           terminalPoints,
           currentProjectile,
           null,
@@ -466,7 +477,9 @@ function init() {
 
       const k = currentTime / fireworks[index].launchDuration;
 
-      if (k < 1.0) {
+      if (k < 1.0 || fireworks[index].playLaunchOneShot) {
+
+        fireworks[index].playLaunchOneShot = false;
 
         const currentPositionX = new THREE.Vector3();
         const currentPositionY = new THREE.Vector3();
@@ -571,9 +584,11 @@ function init() {
   /* Scene render and animate */
   const clock = new THREE.Clock();
 
-  function animate() {
+  function animate(time) {
 
-    var time = clock.getDelta();
+    if (timelinePlaying) timelinePosition = time;
+    timelinePosition %= timelineLength;
+    console.log(timelinePosition);
     
     if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
@@ -585,10 +600,10 @@ function init() {
 
     composer.render();
     
-    var frame = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 
   }
 
-  animate();
+  animate(clock.getDelta());
 
 }
