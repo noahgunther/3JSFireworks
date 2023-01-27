@@ -11,13 +11,15 @@
     <script type="module" src="/main.js"></script>
     <canvas id="bg"></canvas>
     <div id="outliner">
-      <div id="palette">
+      <div class="fireworkdata">
+        <div id="randomparamslabel">RANDOM PARAMS:</div>
+        <input id="randomparamstoggle" type="checkbox">
         <div id="colorslabel">COLORS:</div>
-        <input id="color0" class="colorpicker" type="color" value="#ffffff"></input>
-        <input id="color1" class="colorpicker" type="color" value="#00ffff"></input>
+        <input id="color0" class="colorpicker" type="color">
+        <input id="color1" class="colorpicker" type="color">
         <div id="scalelabel">SCALE:</div>
         <div id="scaleminus" class="scalecontrols">-</div>
-        <div id="scalevalue" class="scalecontrols">o</div>
+        <div id="scalevalue" class="scalecontrols">*</div>
         <div id="scaleplus" class="scalecontrols">+</div>
       </div>
     </div>
