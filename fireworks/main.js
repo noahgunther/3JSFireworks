@@ -228,6 +228,9 @@ function init() {
       active,
       recorded,
       playLaunchOneShot,
+      launchCompleted,
+      projectileDisposed,
+      explosionDisposed,
       launchDuration, 
       launchTime, 
       originPoint, 
@@ -247,6 +250,9 @@ function init() {
       this.active = active;
       this.recorded = recorded;
       this.playLaunchOneShot = playLaunchOneShot;
+      this.launchCompleted = launchCompleted;
+      this.projectileDisposed = projectileDisposed;
+      this.explosionDisposed = explosionDisposed;
       this.launchDuration = launchDuration;
       this.launchTime = launchTime;
       this.originPoint = originPoint;
@@ -389,6 +395,9 @@ function init() {
       const launchDuration = 1000;
       const explodeDuration = 500;
 
+      const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
+      const terminalPointY = (Math.round((mousePagePosition.y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
+
       const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
       let explosionMeshes = [];
       let explosionPathMeshes = [];
@@ -405,9 +414,9 @@ function init() {
           explosionPathMeshes.push(null);
 
           terminalPoints.push(new THREE.Vector3(
-            p.x + (Math.random() * 2 - 1) * radiusRandom,
-            p.y + (Math.random() * 2 - 1) * radiusRandom, 
-            p.z + (Math.random() * 2 - 1) * radiusRandom
+            (Math.random() * 2 - 1) * radiusRandom,
+            (Math.random() * 2 - 1) * radiusRandom, 
+            (Math.random() * 2 - 1) * radiusRandom
           ));
 
         }
@@ -433,12 +442,15 @@ function init() {
           true,
           recording,
           recording,
+          false,
+          false,
+          false,
           launchDuration,
-          recording ? Date.now() - launchDuration : Date.now(),
+          recording ? timelinePosition - launchDuration : Date.now(),
           setLaunchPosition(),
           terminalPoint,
           explodeDuration,
-          recording ? Date.now() : Date.now() + launchDuration,
+          recording ? timelinePosition : Date.now() + launchDuration,
           terminalPoints,
           currentProjectile,
           null,
@@ -447,7 +459,10 @@ function init() {
           color0,
           color1,
           scaleValue,
-          new THREE.Vector2(mousePagePosition.x, mousePagePosition.y)
+          new THREE.Vector2(
+            terminalPointX, 
+            terminalPointY
+          )
         )
       );
 
@@ -469,17 +484,30 @@ function init() {
 
   }
 
+  function updateTerminalPosition(index) {
+
+    const terminalPointPageX = (fireworks[index].position.x * 0.01) * 2.0 - 1.0;
+    const terminalPointPageY = (fireworks[index].position.y * 0.01) * 2.0 - 1.0;
+    
+    const originPointRayCast = new THREE.Raycaster();
+    originPointRayCast.setFromCamera(new THREE.Vector2(terminalPointPageX, terminalPointPageY), camera);
+    const raycastIntersects = originPointRayCast.intersectObjects(interesectionObjects, true);
+
+    return raycastIntersects[0].point;
+
+  }
+
   function animateFirework(index) {
 
     if (fireworks[index].active) {
 
-      const currentTime = Date.now() - fireworks[index].launchTime;
+      const currentTime = fireworks[index].recorded ? timelinePosition - fireworks[index].launchTime : Date.now() - fireworks[index].launchTime;
 
-      const k = currentTime / fireworks[index].launchDuration;
+      let k = currentTime / fireworks[index].launchDuration;
 
-      if (k < 1.0 || fireworks[index].playLaunchOneShot) {
+      fireworks[index].terminalPoint = updateTerminalPosition(index);
 
-        fireworks[index].playLaunchOneShot = false;
+      if (k < 1.0 && k >= 0.0) {
 
         const currentPositionX = new THREE.Vector3();
         const currentPositionY = new THREE.Vector3();
@@ -499,9 +527,41 @@ function init() {
         fireworks[index].pathMesh = generateProjectilePath(fireworks[index].originPoint, fireworks[index].terminalPoint, k, fireworks[index].color0);
         scene.add(fireworks[index].pathMesh);
 
+        fireworks[index].launchCompleted = false;
+        fireworks[index].projectileDisposed = false;
+
       }
 
-      else if (fireworks[index].projectileMesh != null) {
+      else if (!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) {
+
+        fireworks[index].launchCompleted = true;
+        fireworks[index].playLaunchOneShot = false;
+
+        k = 1.0;
+
+        const currentPositionX = new THREE.Vector3();
+        const currentPositionY = new THREE.Vector3();
+        currentPositionX.lerpVectors(fireworks[index].originPoint, fireworks[index].terminalPoint, k*k);
+        currentPositionY.lerpVectors(fireworks[index].originPoint, fireworks[index].terminalPoint, -1*k*k+(2*k));
+
+        fireworks[index].projectileMesh.position.set(currentPositionX.x, currentPositionY.y, currentPositionX.z);
+
+        const kclamp = Math.max(Math.min(k, 1.0), 0.5) * 0.1;
+        fireworks[index].projectileMesh.scale.set(kclamp, kclamp, kclamp);
+
+        if (fireworks[index].pathMesh != null) { 
+          scene.remove(fireworks[index].pathMesh);
+          fireworks[index].pathMesh.geometry.dispose();
+          fireworks[index].pathMesh.material.dispose();
+        }
+        fireworks[index].pathMesh = generateProjectilePath(fireworks[index].originPoint, fireworks[index].terminalPoint, k, fireworks[index].color0);
+        scene.add(fireworks[index].pathMesh);
+
+        fireworks[index].projectileDisposed = false;
+
+      }
+
+      else if (!fireworks[index].projectileDisposed) {
 
         scene.remove(fireworks[index].pathMesh);
         scene.remove(fireworks[index].projectileMesh);
@@ -512,8 +572,12 @@ function init() {
         fireworks[index].projectileMesh.geometry.dispose();
         fireworks[index].projectileMesh.material.dispose();
 
-        fireworks[index].pathMesh = null;
-        fireworks[index].projectileMesh = null;
+        fireworks[index].projectileDisposed = true;
+
+        if (!fireworks[index].recorded) {
+          fireworks[index].pathMesh = null;
+          fireworks[index].projectileMesh = null;
+        }
 
       }
 
@@ -525,7 +589,7 @@ function init() {
 
   function animateExplosion(index) {
 
-    const currentTime = Date.now() - fireworks[index].explodeTime;
+    const currentTime = fireworks[index].recorded ? timelinePosition - fireworks[index].explodeTime : Date.now() - fireworks[index].explodeTime;
 
     const k = currentTime / fireworks[index].explodeDuration;
 
@@ -534,7 +598,12 @@ function init() {
       if (k < 1.0 && k >= 0.0) {
 
         const currentPosition = new THREE.Vector3();
-        currentPosition.lerpVectors(fireworks[index].terminalPoint, fireworks[index].explosionTerminalPoints[j], k);
+        const terminalPoint = new THREE.Vector3(
+          fireworks[index].terminalPoint.x + fireworks[index].explosionTerminalPoints[j].x, 
+          fireworks[index].terminalPoint.y + fireworks[index].explosionTerminalPoints[j].y, 
+          fireworks[index].terminalPoint.z + fireworks[index].explosionTerminalPoints[j].z 
+        );
+        currentPosition.lerpVectors(fireworks[index].terminalPoint, terminalPoint, k);
         currentPosition.y -= k*k*0.075*fireworks[index].explosionScale;
   
         fireworks[index].explosionMeshes[j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
@@ -549,31 +618,42 @@ function init() {
         }
         fireworks[index].explosionPathMeshes[j] = generateExplosionPath(
           fireworks[index].terminalPoint, 
-          fireworks[index].explosionTerminalPoints[j], 
+          terminalPoint, 
           k, 
           fireworks[index].color1, 
           fireworks[index].explosionScale
         );
 
         scene.add(fireworks[index].explosionPathMeshes[j]);
+
+        fireworks[index].explosionDisposed = false;
   
       }
   
-      else if (fireworks[index].explosionMeshes[j] != null && k > 0.0) {
+      else if (!fireworks[index].explosionDisposed) {
 
-        scene.remove(fireworks[index].explosionPathMeshes[j]);
-        scene.remove(fireworks[index].explosionMeshes[j]);
+        if (fireworks[index].explosionPathMeshes[j] != null) {
 
-        fireworks[index].explosionPathMeshes[j].geometry.dispose();
-        fireworks[index].explosionPathMeshes[j].material.dispose();
-        
-        fireworks[index].explosionMeshes[j].geometry.dispose();
-        fireworks[index].explosionMeshes[j].material.dispose();
-        
-        fireworks[index].explosionPathMeshes[j] = null;
-        fireworks[index].explosionMeshes[j] = null;
+          scene.remove(fireworks[index].explosionPathMeshes[j]);
+          scene.remove(fireworks[index].explosionMeshes[j]);
 
-        fireworks[index].active = false;
+          fireworks[index].explosionPathMeshes[j].geometry.dispose();
+          fireworks[index].explosionPathMeshes[j].material.dispose();
+          
+          fireworks[index].explosionMeshes[j].geometry.dispose();
+          fireworks[index].explosionMeshes[j].material.dispose();
+
+          if (!fireworks[index].recorded) {
+            fireworks[index].explosionPathMeshes[j] = null;
+            fireworks[index].explosionMeshes[j] = null;
+          }
+
+          if (j == fireworks[index].explosionMeshes.length - 1) {
+            fireworks[index].explosionDisposed = true;
+            if (!fireworks[index].recorded) fireworks[index].active = false;
+          }
+
+        }
   
       }
       
