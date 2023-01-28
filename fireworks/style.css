@@ -1,3 +1,5 @@
+/* Main */
+
 body{
   overflow: hidden;
 }
@@ -10,6 +12,8 @@ body{
   height: 100%;
   overflow: hidden;
 }
+
+/* Outliner and contents */
 
 #outliner {
   position: absolute;
@@ -123,4 +127,51 @@ body{
   position: absolute;
   top: 80%;
   left: 10%;
+}
+
+/* Timeline and contents */
+
+#timeline {
+  position: absolute;
+  transform: translate(-50%, 0%);
+  top: 86%;
+  left: 50%;
+  height: 6%;
+  width: 90%;
+  border-radius: 2em;
+  background-color: white;
+  overflow: hidden;
+  pointer-events: all;
+  z-index: 1;
+  user-select: none;
+}
+
+#timelineline {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  height: 5%;
+  width: calc(100% - 80px);
+  border-radius: 2px;
+  background-color: rgb(128, 128, 128);
+  pointer-events: all;
+  z-index: 2;
+  user-select: none;
+}
+
+#timelineposition {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 40px;
+  width: 4vh;
+  height: 0;
+  padding-top: 4vh;
+  border-radius: 100%;
+  background-color: white;
+  border: 0.33vh solid rgb(128, 128, 128);;
+  pointer-events: all;
+  z-index: 3;
+  user-select: none;
 }

@@ -103,6 +103,16 @@ function init() {
   var recording = true;
   var timelinePlaying = true;
 
+  // Timeline div
+  const timelinePositionMarker = document.getElementById("timelineposition");
+
+  function updateTimelinePositionMarker() {
+
+    const currentTime = timelinePosition / timelineLength;
+    timelinePositionMarker.style.setProperty('left', 'calc(' + currentTime * 100.0 + '% + ' + (-40.0 * (currentTime * 2 - 1)) + 'px)');
+
+  }
+
   /* Firework parameters */
   const body = document.getElementById('body');
 
@@ -663,12 +673,14 @@ function init() {
 
   /* Scene render and animate */
   const clock = new THREE.Clock();
+  const startDelay = 1000;
 
   function animate(time) {
 
-    if (timelinePlaying) timelinePosition = time;
+    if (timelinePlaying) timelinePosition = Math.max(time - startDelay, 0.0);
     timelinePosition %= timelineLength;
     console.log(timelinePosition);
+    updateTimelinePositionMarker();
     
     if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
