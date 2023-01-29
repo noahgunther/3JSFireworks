@@ -102,6 +102,9 @@ function init() {
   var timelineLength = 10000;
   var recording = true;
   var timelinePlaying = false;
+  var skipToEnd = false;
+  var skipToStart = false;
+  var lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
   var timelineReversing = false;
   var loopForever = false;
 
@@ -110,6 +113,8 @@ function init() {
   const playPauseButton = document.getElementById("playpausebutton");
   const playButtonImg = document.getElementById("playbutton");
   const pauseButtonImg = document.getElementById("pausebutton");
+  const skipToEndButton = document.getElementById("skiptoendbutton");
+  const skipToStartButton = document.getElementById("skiptostartbutton");
   const reversePauseButton = document.getElementById("reversepausebutton");
   const reverseButtonImg = document.getElementById("reversebutton");
   const reversePauseButtonImg = document.getElementById("pausebuttonrev");
@@ -145,6 +150,20 @@ function init() {
 
   }
 
+  skipToEndButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipToEndButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipToEndButton.onclick = function() {
+    
+    skipToEnd = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
   reversePauseButton.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
   }
@@ -162,7 +181,21 @@ function init() {
     reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
     reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
-    afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
+    afterimagePass.uniforms['damp'].value = timelineReversing ? 0.0 : 1.0;
+
+  }
+
+  skipToStartButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipToStartButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipToStartButton.onclick = function() {
+    
+    skipToStart = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
 
   }
 
@@ -544,6 +577,8 @@ function init() {
         )
       );
 
+      if (!timelinePlaying) updateFireworks();
+
     }
 
   }
@@ -610,7 +645,9 @@ function init() {
 
       }
 
-      else if (!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) {
+      else if (
+        ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
+        || (timelinePosition == 0.0 && k >= 1.0)) {
 
         fireworks[index].launchCompleted = true;
         fireworks[index].playLaunchOneShot = false;
@@ -741,25 +778,111 @@ function init() {
 
   /* Scene render and animate */
   const clock = new THREE.Clock();
-  var pauseTime = 0.0;
   var timeOnLastFrame = 0.0;
 
-  function animate(time) {
-
-    if (timelinePlaying) { 
-      timelinePosition = Math.max(time - pauseTime, 0.0);
-      timelinePosition %= timelineLength;
-      updateTimelinePositionMarker();
-    }
-    else {
-      pauseTime += time - timeOnLastFrame;
-    }
-    
-    if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
-
+  function updateFireworks() {
     for (let i = 0; i < fireworks.length; i++) {
       animateFirework(i);
     }
+  }
+
+  function animate(time) {
+
+    if (recording) {
+
+      if (skipToEnd) {
+
+        afterimagePass.uniforms['damp'].value = 0.0;
+
+        timelinePosition = timelineLength;
+
+        updateTimelinePositionMarker();
+
+        updateFireworks();
+
+        skipToEnd = false;
+
+        requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+      }
+
+      else if (skipToStart) {
+
+        afterimagePass.uniforms['damp'].value = 0.0;
+
+        timelinePosition = 0.0;
+
+        updateTimelinePositionMarker();
+
+        updateFireworks();
+
+        skipToStart = false;
+
+        requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+      }
+
+      else if (timelinePlaying) { 
+
+        timelinePosition += time - timeOnLastFrame;
+
+        if (timelinePosition >= timelineLength) {
+
+          timelinePosition = 0.0;
+
+          if (!loopForever) {
+
+            timelinePosition = 0.0;
+            timelinePlaying = false;
+
+            playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+            pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
+            afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
+
+          }
+
+          lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+          afterimagePass.uniforms['damp'].value = 0.0;
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+        }
+
+        updateTimelinePositionMarker();
+
+        updateFireworks();
+
+      }
+      
+      else if (timelineReversing) {
+
+        timelinePosition -= time - timeOnLastFrame;
+
+        if (timelinePosition <= 0.0) {
+
+          timelinePosition = 0.0;
+          timelineReversing = false;
+
+          reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
+          reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
+
+        }
+
+        updateTimelinePositionMarker();
+
+        updateFireworks();
+
+      }
+
+    }
+
+    else {
+
+      updateFireworks();
+
+    }
+    
+    if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
     
     renderer.render(scene, camera);
     composer.render();
