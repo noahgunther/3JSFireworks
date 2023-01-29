@@ -100,13 +100,13 @@ function init() {
   /* Timeline */
   var timelinePosition = 0;
   var timelineLength = 10000;
-  var recording = true;
+  var recording = false;
   var timelinePlaying = false;
   var skipToEnd = false;
   var skipToStart = false;
   var lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
   var timelineReversing = false;
-  var loopForever = false;
+  var loopForever = true;
 
   // Timeline ui
   const timelinePositionMarker = document.getElementById("timelineposition");
@@ -222,6 +222,16 @@ function init() {
   var randomizeParamsBool = true;
   randomParamsToggle.checked = true;
 
+  function randomizeExplosionType() {
+
+    const type = Math.floor(Math.random() * explosionTypeNames.length);
+
+    explosionTypePicker.value = explosionTypeNames[type];
+
+    return explosionTypeNames[type];
+
+  }
+
   function randomizeColor() {
 
     const color = new THREE.Color(Math.random(), Math.random(), Math.random());
@@ -244,11 +254,28 @@ function init() {
     randomizeParamsBool = randomParamsToggle.checked;
   });
 
+  // Explosion type
+  var explosionTypeNames = [];
+  explosionTypeNames.push("burst");
+  explosionTypeNames.push("drift");
+  explosionTypeNames.push("zap");
+  explosionTypeNames.push("flower");
+  explosionTypeNames.push("flower2");
+
+  const explosionTypePicker = document.getElementById("explosiontype");
+  var explosionType = randomizeExplosionType();
+
+  explosionTypePicker.addEventListener("input", (event) => {
+    explosionType = explosionTypePicker.value;
+  });
+
   // Colors
   const colorPicker0 = document.getElementById("color0");
   const colorPicker1 = document.getElementById("color1");
+  const colorPicker2 = document.getElementById("color2");
   var color0 = randomizeColor();
   var color1 = randomizeColor();
+  var color2 = randomizeColor();
 
   function componentToHex(c) {
     var hex = c.toString(16);
@@ -263,6 +290,7 @@ function init() {
 
     colorPicker0.value = rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255));
     colorPicker1.value = rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255));
+    colorPicker2.value = rgbToHex(Math.floor(color2.r * 255), Math.floor(color2.g * 255), Math.floor(color2.b * 255));
 
   }
 
@@ -287,12 +315,17 @@ function init() {
     color1 = new THREE.Color(color1.r, color1.g, color1.b);
   });
 
+  colorPicker2.addEventListener("input", (event) => {
+    color2 = hexToRgb(colorPicker2.value);
+    color2 = new THREE.Color(color2.r, color2.g, color2.b);
+  });
+
   // Scale
   const scalePickerDisplayValue = document.getElementById("scalevalue");
   const scalePickerMinus = document.getElementById("scaleminus");
   const scalePickerPlus = document.getElementById("scaleplus");
   const scaleValueMin = 0.5;
-  const scaleValueMax = 3.0;
+  const scaleValueMax = 4.0;
   var scaleValue = randomizeScale();
 
   scalePickerMinus.onmouseover = function() {
@@ -353,8 +386,10 @@ function init() {
       pathMesh,
       explosionMeshes,
       explosionPathMeshes,
+      explosionType,
       color0,
       color1,
+      color2,
       explosionScale,
       position
     ) {
@@ -375,8 +410,10 @@ function init() {
       this.pathMesh = pathMesh;
       this.explosionMeshes = explosionMeshes;
       this.explosionPathMeshes = explosionPathMeshes;
+      this.explosionType = explosionType;
       this.color0 = color0;
       this.color1 = color1;
+      this.color2 = color2;
       this.explosionScale = explosionScale;
       this.position = position;
     }
@@ -435,25 +472,51 @@ function init() {
   }
 
   class ExplosionSegmentCurve extends THREE.Curve {
-    constructor(scale = 1, o = new THREE.Vector3(), t = new THREE.Vector3(), k = 0.0, sv = 1.0) {
+    constructor(scale = 1, o = new THREE.Vector3(), t = new THREE.Vector3(), k = 0.0, sv = 1.0, type = '') {
       super();
       this.scale = scale;
       this.o = o;
       this.t = t;
       this.k = k;
       this.sv = sv;
+      this.type = type;
     }
     getPoint(p, optionalTarget = new THREE.Vector3()) {
 
       const point = optionalTarget;
 
-		  const scale = this.scale, o = this.o, t = this.t, k = this.k, sv = this.sv;
+		  const scale = this.scale, o = this.o, t = this.t, k = this.k, sv = this.sv, type = this.type;
 
       p *= k;
 
       const pxyz = new THREE.Vector3();
-      pxyz.lerpVectors(o, t, p);
-      pxyz.y -= p*p*0.075*sv;
+
+      if (type == "burst") {
+        const l = new THREE.Vector3();
+        l.lerpVectors(o, t, k - k/2);
+        pxyz.lerpVectors(o, t, p);
+      }
+      else if (type == "drift") {
+        pxyz.lerpVectors(o, t, p);
+        pxyz.y -= p*p*0.075*sv;
+      }
+      else if (type == "zap") {
+        pxyz.lerpVectors(o, t, p);
+        pxyz.x += (Math.random() * 0.02 - 0.01) * sv * (1-k);
+        pxyz.y += (Math.random() * 0.02 - 0.01) * sv * (1-k);
+        pxyz.z += (Math.random() * 0.02 - 0.01) * sv * (1-k);
+      }
+      else if (type == "flower") {
+        const l = new THREE.Vector3();
+        l.lerpVectors(o, t, k*k*3.0);
+        pxyz.lerpVectors(l, t, p);
+      }
+      else if (type == "flower2") {
+        const l = new THREE.Vector3();
+        l.lerpVectors(o, t, k*k*3.0);
+        l.normalize();
+        pxyz.lerpVectors(l, t, p);
+      }
 
       point.set(pxyz.x, pxyz.y, pxyz.z).multiplyScalar(scale);
       
@@ -462,9 +525,9 @@ function init() {
     }
   };
 
-  function generateExplosionPath(origin, current, k, color, sv) {
+  function generateExplosionPath(origin, current, k, color, sv, type) {
 
-    const pathPoints = new ExplosionSegmentCurve(10, origin, current, k, sv);
+    const pathPoints = new ExplosionSegmentCurve(10, origin, current, k, sv, type);
     const pathGeometry = new THREE.TubeGeometry(pathPoints, 6, Math.max((1-k) * 0.05, 0.001), 3, false);
     const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
@@ -481,8 +544,10 @@ function init() {
   canvas.onmousedown = function() {
 
     if (randomizeParamsBool) {
+      explosionType = randomizeExplosionType();
       color0 = randomizeColor();
       color1 = randomizeColor();
+      color2 = randomizeColor();
       updateColorPickers();
       scaleValue = randomizeScale();
     }
@@ -512,8 +577,8 @@ function init() {
       const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
       let explosionMeshes = [];
       let explosionPathMeshes = [];
-      let terminalPoints = [];
-      function createExplosion(p, color) {
+      let explosionTerminalPoints = [];
+      function createExplosion(type, p, color) {
 
         const shrapnelCount = 20;
         const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
@@ -524,11 +589,27 @@ function init() {
 
           explosionPathMeshes.push(null);
 
-          terminalPoints.push(new THREE.Vector3(
-            (Math.random() * 2 - 1) * radiusRandom,
-            (Math.random() * 2 - 1) * radiusRandom, 
-            (Math.random() * 2 - 1) * radiusRandom
-          ));
+          if (type == "burst") {
+            explosionTerminalPoints.push(new THREE.Vector3(
+              (Math.sin(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom,
+              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom, 
+              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom
+            ));
+          }
+          else if (type == "drift" || type == "zap") {
+            explosionTerminalPoints.push(new THREE.Vector3(
+              (Math.random() * 2 - 1) * radiusRandom,
+              (Math.random() * 2 - 1) * radiusRandom, 
+              (Math.random() * 2 - 1) * radiusRandom
+            ));
+          }
+          else if (type == "flower" || type == "flower2") {
+            explosionTerminalPoints.push(new THREE.Vector3(
+              (Math.sin(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33,
+              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33, 
+              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33
+            ));
+          }
 
         }
 
@@ -546,7 +627,7 @@ function init() {
 
       }
 
-      createExplosion(terminalPoint, color1);
+      createExplosion(explosionType, terminalPoint, color1);
 
       fireworks.push(
         new Firework(
@@ -562,13 +643,15 @@ function init() {
           terminalPoint,
           explodeDuration,
           recording ? timelinePosition : Date.now() + launchDuration,
-          terminalPoints,
+          explosionTerminalPoints,
           currentProjectile,
           null,
           explosionMeshes,
           explosionPathMeshes,
+          explosionType,
           color0,
           color1,
+          color2,
           scaleValue,
           new THREE.Vector2(
             terminalPointX, 
@@ -647,7 +730,7 @@ function init() {
 
       else if (
         ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
-        || (timelinePosition == 0.0 && k >= 1.0)) {
+        || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
 
         fireworks[index].launchCompleted = true;
         fireworks[index].playLaunchOneShot = false;
@@ -676,7 +759,7 @@ function init() {
 
       }
 
-      else if (!fireworks[index].projectileDisposed) {
+      else if (!fireworks[index].projectileDisposed && fireworks[index].pathMesh != null) {
 
         scene.remove(fireworks[index].pathMesh);
         scene.remove(fireworks[index].projectileMesh);
@@ -712,19 +795,29 @@ function init() {
 
       if (k < 1.0 && k >= 0.0) {
 
-        const currentPosition = new THREE.Vector3();
-        const terminalPoint = new THREE.Vector3(
+        var currentPosition = new THREE.Vector3();
+        var terminalPoint = new THREE.Vector3(
           fireworks[index].terminalPoint.x + fireworks[index].explosionTerminalPoints[j].x, 
           fireworks[index].terminalPoint.y + fireworks[index].explosionTerminalPoints[j].y, 
           fireworks[index].terminalPoint.z + fireworks[index].explosionTerminalPoints[j].z 
         );
         currentPosition.lerpVectors(fireworks[index].terminalPoint, terminalPoint, k);
-        currentPosition.y -= k*k*0.075*fireworks[index].explosionScale;
+        
+        if (fireworks[index].explosionType == "drift") {
+          currentPosition.y -= k*k*0.075*fireworks[index].explosionScale;
+        }
+        else if (fireworks[index].explosionType == "zap" || fireworks[index].explosionType == "flower" || fireworks[index].explosionType == "flower2") {
+          currentPosition = fireworks[index].explosionTerminalPoints[j];
+        }
   
         fireworks[index].explosionMeshes[j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
 
         const kclamp = Math.max(Math.min(1.0-k, 1.0), 0.5);
         fireworks[index].explosionMeshes[j].scale.set(kclamp, kclamp, kclamp);
+
+        const colorMix = new THREE.Color();
+        colorMix.lerpColors(fireworks[index].color1, fireworks[index].color2, Math.max(Math.min(k*2.0 - 1.0, 1.0), 0.0));
+        fireworks[index].explosionMeshes[j].material.color = colorMix;
 
         if (fireworks[index].explosionPathMeshes[j] != null) { 
           scene.remove(fireworks[index].explosionPathMeshes[j]);
@@ -735,8 +828,9 @@ function init() {
           fireworks[index].terminalPoint, 
           terminalPoint, 
           k, 
-          fireworks[index].color1, 
-          fireworks[index].explosionScale
+          colorMix,
+          fireworks[index].explosionScale,
+          fireworks[index].explosionType
         );
 
         scene.add(fireworks[index].explosionPathMeshes[j]);

@@ -12,11 +12,20 @@
     <canvas id="bg"></canvas>
     <div id="outliner">
       <div class="fireworkdata">
-        <div id="randomparamslabel">Randomize params:</div>
+        <div id="randomparamslabel">Randomize:</div>
         <input id="randomparamstoggle" type="checkbox">
+        <div id="typelabel">Type:</div>
+        <select id="explosiontype">
+          <option value="burst">Burst</option>
+          <option value="drift">Drift</option>
+          <option value="zap">Zap</option>
+          <option value="flower">Flower</option>
+          <option value="flower2">Flower 2</option>
+        </select>
         <div id="colorslabel">Colors:</div>
         <input id="color0" class="colorpicker" type="color">
         <input id="color1" class="colorpicker" type="color">
+        <input id="color2" class="colorpicker" type="color">
         <div id="scalelabel">Scale:</div>
         <div id="scaleminus" class="scalecontrols">-</div>
         <div id="scalevalue" class="scalecontrols">*</div>
@@ -41,8 +50,8 @@
         <div id="timelineposition"></div>
       </div>
       <div id="loopbutton" class="timelinebuttonsright">
-        <img id="looponcebutton" src="./graphics/looponce.png" style="visibility: visible;">
-        <img id="loopforeverbutton" src="./graphics/loopforever.png" style="visibility: hidden;">
+        <img id="looponcebutton" src="./graphics/looponce.png" style="visibility: hidden;">
+        <img id="loopforeverbutton" src="./graphics/loopforever.png" style="visibility: visible;">
       </div>
       <div id="skiptostartbutton" class="timelinebuttonsright">
         <img src="./graphics/skiptostart.png">
