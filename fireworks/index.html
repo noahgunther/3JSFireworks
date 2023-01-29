@@ -12,12 +12,12 @@
     <canvas id="bg"></canvas>
     <div id="outliner">
       <div class="fireworkdata">
-        <div id="randomparamslabel">RANDOM PARAMS:</div>
+        <div id="randomparamslabel">Randomize params:</div>
         <input id="randomparamstoggle" type="checkbox">
-        <div id="colorslabel">COLORS:</div>
+        <div id="colorslabel">Colors:</div>
         <input id="color0" class="colorpicker" type="color">
         <input id="color1" class="colorpicker" type="color">
-        <div id="scalelabel">SCALE:</div>
+        <div id="scalelabel">Scale:</div>
         <div id="scaleminus" class="scalecontrols">-</div>
         <div id="scalevalue" class="scalecontrols">*</div>
         <div id="scaleplus" class="scalecontrols">+</div>
@@ -25,8 +25,35 @@
       </div>
     </div>
     <div id="timeline">
-      <div id="timelineline"></div>
-      <div id="timelineposition"></div>
+      <div id="timelinelength">- 00:10 +</div>
+      <div id="playpausebutton" class="timelinebuttonsleft">
+        <img id="playbutton" src="./graphics/play.png" style="visibility: visible;">
+        <img id="pausebutton" src="./graphics/pause.png" style="visibility: hidden;">
+      </div>
+      <div id="skipforwardbutton" class="timelinebuttonsleft">
+        <img src="./graphics/skipforward.png">
+      </div>
+      <div id="skiptoendbutton" class="timelinebuttonsleft">
+        <img src="./graphics/skiptoend.png">
+      </div>
+      <div id="timelinelinewrapper">
+        <div id="timelineline"></div>
+        <div id="timelineposition"></div>
+      </div>
+      <div id="loopbutton" class="timelinebuttonsright">
+        <img id="looponcebutton" src="./graphics/looponce.png" style="visibility: visible;">
+        <img id="loopforeverbutton" src="./graphics/loopforever.png" style="visibility: hidden;">
+      </div>
+      <div id="skiptostartbutton" class="timelinebuttonsright">
+        <img src="./graphics/skiptostart.png">
+      </div>
+      <div id="skipbackbutton" class="timelinebuttonsright">
+        <img src="./graphics/skipback.png">
+      </div>
+      <div id="reversepausebutton" class="timelinebuttonsright">
+        <img id="reversebutton" src="./graphics/reverse.png" style="visibility: visible;">
+        <img id="pausebuttonrev" src="./graphics/pause.png" style="visibility: hidden;">
+      </div>
     </div>
   </body>
 </html>

@@ -74,7 +74,7 @@ function init() {
   var intersectionPoint = new THREE.Vector3();
 
   const interesectionObjects = [];
-  const rayCastTargetPlaneGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
+  const rayCastTargetPlaneGeometry = new THREE.PlaneGeometry(300, 300, 1, 1);
   const rayCastTargetPlaneMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0 });
   const rayCastTargetPlane = new THREE.Mesh(rayCastTargetPlaneGeometry, rayCastTargetPlaneMaterial);
   scene.add(rayCastTargetPlane);
@@ -101,15 +101,83 @@ function init() {
   var timelinePosition = 0;
   var timelineLength = 10000;
   var recording = true;
-  var timelinePlaying = true;
+  var timelinePlaying = false;
+  var timelineReversing = false;
+  var loopForever = false;
 
-  // Timeline div
+  // Timeline ui
   const timelinePositionMarker = document.getElementById("timelineposition");
+  const playPauseButton = document.getElementById("playpausebutton");
+  const playButtonImg = document.getElementById("playbutton");
+  const pauseButtonImg = document.getElementById("pausebutton");
+  const reversePauseButton = document.getElementById("reversepausebutton");
+  const reverseButtonImg = document.getElementById("reversebutton");
+  const reversePauseButtonImg = document.getElementById("pausebuttonrev");
+  const loopButton = document.getElementById("loopbutton");
+  const loopOnceButtonImg = document.getElementById("looponcebutton");
+  const loopForeverButtonImg = document.getElementById("loopforeverbutton");
 
   function updateTimelinePositionMarker() {
 
     const currentTime = timelinePosition / timelineLength;
-    timelinePositionMarker.style.setProperty('left', 'calc(' + currentTime * 100.0 + '% + ' + (-40.0 * (currentTime * 2 - 1)) + 'px)');
+    timelinePositionMarker.style.setProperty('left', currentTime * 100.0 + '%');
+
+  }
+
+  playPauseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  playPauseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  playPauseButton.onclick = function() {
+    
+    timelineReversing = false;
+    reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
+    reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
+
+    timelinePlaying = !timelinePlaying;
+
+    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
+    afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
+
+  }
+
+  reversePauseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  reversePauseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  reversePauseButton.onclick = function() {
+    
+    timelinePlaying = false;
+    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
+    timelineReversing = !timelineReversing;
+
+    reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
+    reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
+
+    afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
+
+  }
+
+  loopButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  loopButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  loopButton.onclick = function() {
+
+    loopForever = !loopForever;
+    
+    loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
+    loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
 
   }
 
@@ -284,7 +352,7 @@ function init() {
   /* 3D object creation functions */
   function createProjectile(color) {
 
-    const projectileGeometry = new THREE.SphereGeometry(0.005, 16, 16);
+    const projectileGeometry = new THREE.SphereGeometry(0.005, 3, 3);
     const projectileMaterial = new THREE.MeshBasicMaterial({ color: color });
     const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
     scene.add(projectile);
@@ -364,7 +432,7 @@ function init() {
   function generateExplosionPath(origin, current, k, color, sv) {
 
     const pathPoints = new ExplosionSegmentCurve(10, origin, current, k, sv);
-    const pathGeometry = new THREE.TubeGeometry(pathPoints, 36, Math.max((1-k) * 0.05, 0.001), 3, false);
+    const pathGeometry = new THREE.TubeGeometry(pathPoints, 6, Math.max((1-k) * 0.05, 0.001), 3, false);
     const pathMaterial = new THREE.MeshBasicMaterial( { color: color } );
 
     const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
@@ -433,7 +501,7 @@ function init() {
 
         function createExplosionComponent() {
 
-          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 6, 6);
+          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 3, 3);
           const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
           const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
           scene.add(shrapnel);
@@ -673,14 +741,19 @@ function init() {
 
   /* Scene render and animate */
   const clock = new THREE.Clock();
-  const startDelay = 1000;
+  var pauseTime = 0.0;
+  var timeOnLastFrame = 0.0;
 
   function animate(time) {
 
-    if (timelinePlaying) timelinePosition = Math.max(time - startDelay, 0.0);
-    timelinePosition %= timelineLength;
-    console.log(timelinePosition);
-    updateTimelinePositionMarker();
+    if (timelinePlaying) { 
+      timelinePosition = Math.max(time - pauseTime, 0.0);
+      timelinePosition %= timelineLength;
+      updateTimelinePositionMarker();
+    }
+    else {
+      pauseTime += time - timeOnLastFrame;
+    }
     
     if (mouseDown) currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
 
@@ -689,8 +762,9 @@ function init() {
     }
     
     renderer.render(scene, camera);
-
     composer.render();
+
+    timeOnLastFrame = time;
     
     requestAnimationFrame(animate);
 
