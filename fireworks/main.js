@@ -217,10 +217,25 @@ function init() {
   /* Firework parameters */
   const body = document.getElementById('body');
 
-  // Random parameters toggle
-  const randomParamsToggle = document.getElementById("randomparamstoggle");
-  var randomizeParamsBool = true;
-  randomParamsToggle.checked = true;
+  // Recording
+  const recordToggle = document.getElementById("recordtoggle");
+  recordToggle.checked = recording;
+
+  recordToggle.addEventListener("change", function() {
+    recording = recordToggle.checked;
+    afterimagePass.uniforms['damp'].value = 0.98;
+  });
+
+  // Random parameters toggles
+  const randomTypeToggle = document.getElementById("randomtypetoggle");
+  const randomColorToggle = document.getElementById("randomcolortoggle");
+  const randomScaleToggle = document.getElementById("randomscaletoggle");
+  var randomizeTypeBool = true;
+  var randomizeColorBool = true;
+  var randomizeScaleBool = true;
+  randomTypeToggle.checked = true;
+  randomColorToggle.checked = true;
+  randomScaleToggle.checked = true;
 
   function randomizeExplosionType() {
 
@@ -250,14 +265,22 @@ function init() {
 
   }
 
-  randomParamsToggle.addEventListener("change", function() {
-    randomizeParamsBool = randomParamsToggle.checked;
+  randomTypeToggle.addEventListener("change", function() {
+    randomizeTypeBool = randomTypeToggle.checked;
+  });
+  randomColorToggle.addEventListener("change", function() {
+    randomizeColorBool = randomColorToggle.checked;
+  });
+  randomScaleToggle.addEventListener("change", function() {
+    randomizeScaleBool = randomScaleToggle.checked;
   });
 
   // Explosion type
   var explosionTypeNames = [];
   explosionTypeNames.push("burst");
   explosionTypeNames.push("drift");
+  explosionTypeNames.push("pop");
+  explosionTypeNames.push("flash");
   explosionTypeNames.push("zap");
   explosionTypeNames.push("flower");
   explosionTypeNames.push("flower2");
@@ -325,7 +348,7 @@ function init() {
   const scalePickerMinus = document.getElementById("scaleminus");
   const scalePickerPlus = document.getElementById("scaleplus");
   const scaleValueMin = 0.5;
-  const scaleValueMax = 4.0;
+  const scaleValueMax = 3.0;
   var scaleValue = randomizeScale();
 
   scalePickerMinus.onmouseover = function() {
@@ -373,6 +396,7 @@ function init() {
       recorded,
       playLaunchOneShot,
       launchCompleted,
+      explosionPlayed,
       projectileDisposed,
       explosionDisposed,
       launchDuration, 
@@ -397,6 +421,7 @@ function init() {
       this.recorded = recorded;
       this.playLaunchOneShot = playLaunchOneShot;
       this.launchCompleted = launchCompleted;
+      this.explosionPlayed = explosionPlayed;
       this.projectileDisposed = projectileDisposed;
       this.explosionDisposed = explosionDisposed;
       this.launchDuration = launchDuration;
@@ -543,14 +568,14 @@ function init() {
 
   canvas.onmousedown = function() {
 
-    if (randomizeParamsBool) {
-      explosionType = randomizeExplosionType();
+    if (randomizeTypeBool) explosionType = randomizeExplosionType();
+    if (randomizeColorBool) {  
       color0 = randomizeColor();
       color1 = randomizeColor();
       color2 = randomizeColor();
       updateColorPickers();
-      scaleValue = randomizeScale();
     }
+    if (randomizeScaleBool) scaleValue = randomizeScale();
 
     currentProjectile = createProjectile(color0);
 
@@ -569,7 +594,10 @@ function init() {
       updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       const launchDuration = 1000;
-      const explodeDuration = 500;
+      let explodeDuration;
+      explodeDuration = 500;
+      if (explosionType == "pop") explodeDuration = 350;
+      else if (explosionType == "flash") explodeDuration = 200;
 
       const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
       const terminalPointY = (Math.round((mousePagePosition.y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
@@ -580,20 +608,22 @@ function init() {
       let explosionTerminalPoints = [];
       function createExplosion(type, p, color) {
 
-        const shrapnelCount = 20;
+        const shrapnelCount = type == "flash" ? 1 : 30;
         const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
 
         for (let j = 0; j < shrapnelCount; j++) {
 
-          explosionMeshes.push(createExplosionComponent());
+          explosionMeshes.push(createExplosionComponent(type));
 
           explosionPathMeshes.push(null);
 
-          if (type == "burst") {
+          if (type == "burst" || type == "pop") {
+            const phi = Math.acos(1.0 - 2.0*j/shrapnelCount);
+            const theta = 6.28 * j/1.618;
             explosionTerminalPoints.push(new THREE.Vector3(
-              (Math.sin(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom,
-              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom, 
-              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom
+              (Math.cos(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom,
+              (Math.sin(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom, 
+              (Math.sin(theta)*Math.cos(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom
             ));
           }
           else if (type == "drift" || type == "zap") {
@@ -602,6 +632,9 @@ function init() {
               (Math.random() * 2 - 1) * radiusRandom, 
               (Math.random() * 2 - 1) * radiusRandom
             ));
+          }
+          else if (type == "flash") {
+            explosionTerminalPoints.push(new THREE.Vector3(0.0, 0.0, 0.0));
           }
           else if (type == "flower" || type == "flower2") {
             explosionTerminalPoints.push(new THREE.Vector3(
@@ -613,9 +646,10 @@ function init() {
 
         }
 
-        function createExplosionComponent() {
+        function createExplosionComponent(type) {
 
-          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, 3, 3);
+          const segmentCount = type == "pop" || type == "flash" ? 32 : 3;
+          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, segmentCount, segmentCount);
           const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
           const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
           scene.add(shrapnel);
@@ -634,6 +668,7 @@ function init() {
           true,
           recording,
           recording,
+          false,
           false,
           false,
           false,
@@ -705,6 +740,8 @@ function init() {
 
       if (k < 1.0 && k >= 0.0) {
 
+        scene.add(fireworks[index].projectileMesh);
+
         const currentPositionX = new THREE.Vector3();
         const currentPositionY = new THREE.Vector3();
         currentPositionX.lerpVectors(fireworks[index].originPoint, fireworks[index].terminalPoint, k*k);
@@ -729,8 +766,8 @@ function init() {
       }
 
       else if (
-        ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
-        || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
+      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
+      || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
 
         fireworks[index].launchCompleted = true;
         fireworks[index].playLaunchOneShot = false;
@@ -795,75 +832,97 @@ function init() {
 
       if (k < 1.0 && k >= 0.0) {
 
+        scene.add(fireworks[index].explosionMeshes[j]);
+
         var currentPosition = new THREE.Vector3();
         var terminalPoint = new THREE.Vector3(
           fireworks[index].terminalPoint.x + fireworks[index].explosionTerminalPoints[j].x, 
           fireworks[index].terminalPoint.y + fireworks[index].explosionTerminalPoints[j].y, 
           fireworks[index].terminalPoint.z + fireworks[index].explosionTerminalPoints[j].z 
         );
+
         currentPosition.lerpVectors(fireworks[index].terminalPoint, terminalPoint, k);
-        
+
         if (fireworks[index].explosionType == "drift") {
           currentPosition.y -= k*k*0.075*fireworks[index].explosionScale;
         }
-        else if (fireworks[index].explosionType == "zap" || fireworks[index].explosionType == "flower" || fireworks[index].explosionType == "flower2") {
-          currentPosition = fireworks[index].explosionTerminalPoints[j];
-        }
   
         fireworks[index].explosionMeshes[j].position.set(currentPosition.x, currentPosition.y, currentPosition.z);
-
-        const kclamp = Math.max(Math.min(1.0-k, 1.0), 0.5);
-        fireworks[index].explosionMeshes[j].scale.set(kclamp, kclamp, kclamp);
 
         const colorMix = new THREE.Color();
         colorMix.lerpColors(fireworks[index].color1, fireworks[index].color2, Math.max(Math.min(k*2.0 - 1.0, 1.0), 0.0));
         fireworks[index].explosionMeshes[j].material.color = colorMix;
 
-        if (fireworks[index].explosionPathMeshes[j] != null) { 
-          scene.remove(fireworks[index].explosionPathMeshes[j]);
-          fireworks[index].explosionPathMeshes[j].geometry.dispose();
-          fireworks[index].explosionPathMeshes[j].material.dispose();
-        }
-        fireworks[index].explosionPathMeshes[j] = generateExplosionPath(
-          fireworks[index].terminalPoint, 
-          terminalPoint, 
-          k, 
-          colorMix,
-          fireworks[index].explosionScale,
-          fireworks[index].explosionType
-        );
+        if (fireworks[index].explosionType != "pop" && fireworks[index].explosionType != "flash") {
 
-        scene.add(fireworks[index].explosionPathMeshes[j]);
+          const kclamp = Math.max(Math.min(1.0-k, 1.0), 0.5);
+          fireworks[index].explosionMeshes[j].scale.set(kclamp, kclamp, kclamp);
+
+          if (fireworks[index].explosionPathMeshes[j] != null) { 
+            scene.remove(fireworks[index].explosionPathMeshes[j]);
+            fireworks[index].explosionPathMeshes[j].geometry.dispose();
+            fireworks[index].explosionPathMeshes[j].material.dispose();
+          }
+          
+          fireworks[index].explosionPathMeshes[j] = generateExplosionPath(
+            fireworks[index].terminalPoint, 
+            terminalPoint, 
+            k, 
+            colorMix,
+            fireworks[index].explosionScale,
+            fireworks[index].explosionType
+          );
+
+          scene.add(fireworks[index].explosionPathMeshes[j]);
+
+        }
+
+        else if (fireworks[index].explosionType == "pop") {
+
+          const popScale = k * 2.0 * fireworks[index].explosionScale * (1/j+1) * Math.random()*k;
+          fireworks[index].explosionMeshes[j].scale.set(popScale, popScale, popScale);
+
+        }
+
+        else if (fireworks[index].explosionType == "flash") {
+
+          const flashScale = k * 20.0 * fireworks[index].explosionScale;
+          fireworks[index].explosionMeshes[j].scale.set(flashScale, flashScale, flashScale);
+
+        }
+
+        fireworks[index].explosionPlayed = true;
 
         fireworks[index].explosionDisposed = false;
   
       }
   
-      else if (!fireworks[index].explosionDisposed) {
+      else if (!fireworks[index].explosionDisposed && fireworks[index].explosionPlayed) {
 
-        if (fireworks[index].explosionPathMeshes[j] != null) {
+        scene.remove(fireworks[index].explosionMeshes[j]);
+
+        if (fireworks[index].explosionType != "pop" && fireworks[index].explosionType != "flash") {
 
           scene.remove(fireworks[index].explosionPathMeshes[j]);
-          scene.remove(fireworks[index].explosionMeshes[j]);
-
           fireworks[index].explosionPathMeshes[j].geometry.dispose();
           fireworks[index].explosionPathMeshes[j].material.dispose();
-          
-          fireworks[index].explosionMeshes[j].geometry.dispose();
-          fireworks[index].explosionMeshes[j].material.dispose();
-
-          if (!fireworks[index].recorded) {
-            fireworks[index].explosionPathMeshes[j] = null;
-            fireworks[index].explosionMeshes[j] = null;
-          }
-
-          if (j == fireworks[index].explosionMeshes.length - 1) {
-            fireworks[index].explosionDisposed = true;
-            if (!fireworks[index].recorded) fireworks[index].active = false;
-          }
 
         }
-  
+        
+        fireworks[index].explosionMeshes[j].geometry.dispose();
+        fireworks[index].explosionMeshes[j].material.dispose();
+
+        if (!fireworks[index].recorded) {
+          fireworks[index].explosionPathMeshes[j] = null;
+          fireworks[index].explosionMeshes[j] = null;
+        }
+
+        if (j == fireworks[index].explosionMeshes.length - 1) {
+          fireworks[index].explosionDisposed = true;
+          fireworks[index].explosionPlayed = false;
+          if (!fireworks[index].recorded) fireworks[index].active = false;
+        }
+
       }
       
     }

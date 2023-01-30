@@ -44,15 +44,63 @@ body{
   overflow: hidden;
 }
 
-#randomparamslabel {
+#recordlabel {
   position: absolute;
-  top: 20%;
+  top: 10%;
   left: 10%;
 }
 
-#randomparamstoggle {
+#recordtoggle {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: scale(1.5);
+}
+
+#randomparamslabel {
+  position: absolute;
+  top: 25%;
+  left: 10%;
+}
+
+#randomtypelabel {
   position: absolute;
   top: 22%;
+  left: 48%;
+  font-size: 60%;
+}
+
+#randomcolorlabel {
+  position: absolute;
+  top: 22%;
+  left: 58%;
+  font-size: 60%;
+}
+
+#randomscalelabel {
+  position: absolute;
+  top: 22%;
+  left: 70%;
+  font-size: 60%;
+}
+
+#randomtypetoggle {
+  position: absolute;
+  top: 27%;
+  left: 50%;
+  transform: scale(1.5);
+}
+
+#randomcolortoggle {
+  position: absolute;
+  top: 27%;
+  left: 60%;
+  transform: scale(1.5);
+}
+
+#randomscaletoggle {
+  position: absolute;
+  top: 27%;
   left: 70%;
   transform: scale(1.5);
 }
