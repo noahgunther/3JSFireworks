@@ -343,13 +343,7 @@ function init() {
 
   // Explosion type
   var explosionTypeNames = [];
-  explosionTypeNames.push("burst");
-  explosionTypeNames.push("drift");
-  explosionTypeNames.push("pop");
-  explosionTypeNames.push("flash");
-  explosionTypeNames.push("zap");
-  explosionTypeNames.push("flower");
-  explosionTypeNames.push("flower2");
+  explosionTypeNames.push("burst", "drift", "pop", "flash", "zap", "flower", "flower2");
 
   const explosionTypePicker = document.getElementById("explosiontype");
   var explosionType = randomizeExplosionType();
@@ -890,7 +884,7 @@ function init() {
 
         if (fireworks[index].launchAudioToggle && !fireworks[index].launchAudioPlayed && (timelinePlaying || !fireworks[index].recorded)) {
           fireworks[index].launchAudioPlayed = true;
-          fireworks[index].launchAudio.volume = 0.2 * Math.max(Math.random(), 0.5);
+          fireworks[index].launchAudio.volume = Math.min(0.35 * Math.max(Math.random(), 0.5), 1.0);
           fireworks[index].launchAudio.play();
         }
 
@@ -1033,7 +1027,7 @@ function init() {
 
         if (fireworks[index].explosionAudioToggle && !fireworks[index].explosionAudioPlayed && (timelinePlaying || !fireworks[index].recorded)) {
           fireworks[index].explosionAudioPlayed = true;
-          fireworks[index].explosionAudio.volume = fireworks[index].explosionScale * 0.35 * Math.max(Math.random(), 0.5);
+          fireworks[index].explosionAudio.volume = Math.min(fireworks[index].explosionScale * 0.5 * Math.max(Math.random(), 0.5), 1.0);
           fireworks[index].explosionAudio.play();
         }
 
