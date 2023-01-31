@@ -8,7 +8,12 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 
 /* Audio */
-import launchAudioUrl from "./audio/launch0.mp3?url";
+import launch0AudioUrl from "./audio/launch0.mp3?url";
+import launch1AudioUrl from "./audio/launch1.mp3?url";
+import launch2AudioUrl from "./audio/launch2.mp3?url";
+import launch3AudioUrl from "./audio/launch3.mp3?url";
+var launchAudios = [];
+launchAudios.push(launch0AudioUrl, launch1AudioUrl, launch2AudioUrl, launch3AudioUrl);
 import explosionAudioUrl from "./audio/explosion0.mp3?url";
 
 /* Start threejs scene when window loaded */
@@ -773,6 +778,8 @@ function init() {
 
       }
 
+      const randomLaunchAudioUrl = launchAudios[Math.floor(Math.random() * launchAudios.length)];
+
       fireworks.push(
         new Firework(
           true,
@@ -781,7 +788,7 @@ function init() {
           false,
           launchAudioBool,
           false,
-          new Audio(launchAudioUrl),
+          new Audio(randomLaunchAudioUrl),
           explosionAudioBool,
           false,
           new Audio(explosionAudioUrl),
