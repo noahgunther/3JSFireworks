@@ -437,7 +437,8 @@ function init() {
       color1,
       color2,
       explosionScale,
-      position
+      position,
+      marker
     ) {
       this.active = active;
       this.recorded = recorded;
@@ -463,6 +464,7 @@ function init() {
       this.color2 = color2;
       this.explosionScale = explosionScale;
       this.position = position;
+      this.marker = marker;
     }
   }
 
@@ -613,11 +615,18 @@ function init() {
       
       mouseDown = false;
 
-      updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
+      createFirework();
+
+    }
+
+  }
+
+  function createFirework() {
+
+    updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       const launchDuration = 1000;
-      let explodeDuration;
-      explodeDuration = 500;
+      let explodeDuration = 500;
       if (explosionType == "pop") explodeDuration = 350;
       else if (explosionType == "flash") explodeDuration = 200;
 
@@ -685,6 +694,19 @@ function init() {
 
       createExplosion(explosionType, terminalPoint, color1);
 
+      // Create timeline marker
+      let marker = null;
+      if (recording) {
+
+        marker = document.createElement('marker');
+        marker.className = 'timelinemarker';
+        marker.style.setProperty('left', (timelinePosition / timelineLength) * 100.0 + '%');
+        marker.style.setProperty('background-color', rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255)));
+        
+        timelineLine.appendChild(marker);
+
+      }
+
       fireworks.push(
         new Firework(
           true,
@@ -713,13 +735,12 @@ function init() {
           new THREE.Vector2(
             terminalPointX, 
             terminalPointY
-          )
+          ),
+          marker
         )
       );
 
-      if (!timelinePlaying) updateFireworks();
-
-    }
+      if (!timelinePlaying && recording) updateFireworks();
 
   }
 

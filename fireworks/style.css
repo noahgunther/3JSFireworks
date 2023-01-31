@@ -304,3 +304,13 @@ body{
   z-index: 3;
   user-select: none;
 }
+
+.timelinemarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  width: 0.5%;
+  height: 90%;
+  border-radius: 1em;
+  z-index: 2;
+}
