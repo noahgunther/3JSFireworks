@@ -147,20 +147,19 @@ body{
 
 #scalelabel {
   position: absolute;
-  top: 80%;
+  top: 75%;
   left: 10%;
 }
 
 .scalecontrols {
   position: absolute;
-  top: 80%;
   font-size: 100%;
 }
 
 #scaleminus {
   transform: translate(-50%, -50%);
   margin-left: 42%;
-  top: 85%;
+  top: 80%;
   border: 2px solid rgb(128, 128, 128);
   padding-left: 10px;
   padding-right: 10px;
@@ -171,7 +170,7 @@ body{
 #scalevalue {
   font-size: 100%;
   margin-left: 50%;
-  top: 89%;
+  top: 84%;
   left: 10%;
   transform: translate(-50%, -50%);
 }
@@ -179,7 +178,7 @@ body{
 #scaleplus {
   transform: translate(-50%, -50%);
   margin-left: 62%;
-  top: 85%;
+  top: 80%;
   border: 2px solid rgb(128, 128, 128);
   padding-left: 7px;
   padding-right: 7px;
@@ -191,6 +190,40 @@ body{
   position: absolute;
   top: 100%;
   left: 10%;
+}
+
+#audiolabel {
+  position: absolute;
+  top: 90%;
+  left: 10%;
+}
+
+#launchaudiolabel {
+  position: absolute;
+  top: 88%;
+  left: 48%;
+  font-size: 60%;
+}
+
+#explosionaudiolabel {
+  position: absolute;
+  top: 88%;
+  left: 63%;
+  font-size: 60%;
+}
+
+#launchaudiotoggle {
+  position: absolute;
+  top: 92%;
+  left: 50%;
+  transform: scale(1.5);
+}
+
+#explosionaudiotoggle {
+  position: absolute;
+  top: 92%;
+  left: 66%;
+  transform: scale(1.5);
 }
 
 /* Timeline and contents */

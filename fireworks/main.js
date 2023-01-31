@@ -7,6 +7,10 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 
+/* Audio */
+import launchAudioUrl from "./audio/launch0.mp3?url";
+import explosionAudioUrl from "./audio/explosion0.mp3?url";
+
 /* Start threejs scene when window loaded */
 window.addEventListener("load", init, false);
 
@@ -276,10 +280,8 @@ function init() {
   recordToggle.addEventListener("change", function() {
     recording = recordToggle.checked;
     timelinePosition = recording ? 0 : -100000;
-    if (recording) {
-      updateTimelinePositionMarker();
-      updateFireworks();
-    }
+    updateTimelinePositionMarker();
+    updateFireworks();
     timelinePlaying = false;
     timelineReversing = false;
     afterimagePass.uniforms['damp'].value = 0.98;
@@ -436,6 +438,21 @@ function init() {
     }
   }
 
+  // Audio
+  const launchAudioToggle = document.getElementById("launchaudiotoggle");
+  const explosionAudioToggle = document.getElementById("explosionaudiotoggle");
+  var launchAudioBool = true;
+  var explosionAudioBool = true;
+  launchAudioToggle.checked = true;
+  explosionAudioToggle.checked = true;
+
+  launchAudioToggle.addEventListener("change", function() {
+    launchAudioBool = launchAudioToggle.checked;
+  });
+  explosionAudioToggle.addEventListener("change", function() {
+    explosionAudioBool = explosionAudioToggle.checked;
+  });
+
   // Position values (read-only)
   const positionDisplayValues = document.getElementById("positionvalues");
 
@@ -455,6 +472,12 @@ function init() {
       recorded,
       playLaunchOneShot,
       launchCompleted,
+      launchAudioToggle,
+      launchAudioPlayed,
+      launchAudio,
+      explosionAudioToggle,
+      explosionAudioPlayed,
+      explosionAudio,
       explosionPlayed,
       projectileDisposed,
       explosionDisposed,
@@ -481,6 +504,12 @@ function init() {
       this.recorded = recorded;
       this.playLaunchOneShot = playLaunchOneShot;
       this.launchCompleted = launchCompleted;
+      this.launchAudioToggle = launchAudioToggle;
+      this.launchAudioPlayed = launchAudioPlayed;
+      this.launchAudio = launchAudio;
+      this.explosionAudioToggle = explosionAudioToggle;
+      this.explosionAudioPlayed = explosionAudioPlayed;
+      this.explosionAudio = explosionAudio;
       this.explosionPlayed = explosionPlayed;
       this.projectileDisposed = projectileDisposed;
       this.explosionDisposed = explosionDisposed;
@@ -750,6 +779,12 @@ function init() {
           recording,
           recording,
           false,
+          launchAudioBool,
+          false,
+          new Audio(launchAudioUrl),
+          explosionAudioBool,
+          false,
+          new Audio(explosionAudioUrl),
           false,
           false,
           false,
@@ -818,7 +853,13 @@ function init() {
 
       fireworks[index].terminalPoint = updateTerminalPosition(index);
 
-      if (k < 1.0 && k >= 0.0) {
+      if (k < 0.0 && timelinePosition >= 0.0) { 
+
+        fireworks[index].launchAudioPlayed = false;
+
+      }
+
+      if (k < 1.0 && k >= 0.0 && fireworks[index].recorded == recording) {
 
         scene.add(fireworks[index].projectileMesh);
 
@@ -840,13 +881,19 @@ function init() {
         fireworks[index].pathMesh = generateProjectilePath(fireworks[index].originPoint, fireworks[index].terminalPoint, k, fireworks[index].color0);
         scene.add(fireworks[index].pathMesh);
 
+        if (fireworks[index].launchAudioToggle && !fireworks[index].launchAudioPlayed && (timelinePlaying || !fireworks[index].recorded)) {
+          fireworks[index].launchAudioPlayed = true;
+          fireworks[index].launchAudio.volume = 0.2 * Math.max(Math.random(), 0.5);
+          fireworks[index].launchAudio.play();
+        }
+
         fireworks[index].launchCompleted = false;
         fireworks[index].projectileDisposed = false;
 
       }
 
       else if (
-      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd && recording) 
+      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
       || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
 
         fireworks[index].launchCompleted = true;
@@ -910,6 +957,12 @@ function init() {
 
     for (let j = 0; j < fireworks[index].explosionMeshes.length; j++) {
 
+      if (k < 0.0) {
+
+        fireworks[index].explosionAudioPlayed = false;
+
+      }
+
       if (k < 1.0 && k >= 0.0) {
 
         scene.add(fireworks[index].explosionMeshes[j]);
@@ -971,8 +1024,13 @@ function init() {
 
         }
 
-        fireworks[index].explosionPlayed = true;
+        if (fireworks[index].explosionAudioToggle && !fireworks[index].explosionAudioPlayed && (timelinePlaying || !fireworks[index].recorded)) {
+          fireworks[index].explosionAudioPlayed = true;
+          fireworks[index].explosionAudio.volume = fireworks[index].explosionScale * 0.35 * Math.max(Math.random(), 0.5);
+          fireworks[index].explosionAudio.play();
+        }
 
+        fireworks[index].explosionPlayed = true;
         fireworks[index].explosionDisposed = false;
   
       }
