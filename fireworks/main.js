@@ -104,6 +104,8 @@ function init() {
   var timelineLength = 10000;
   var recording = false;
   var timelinePlaying = false;
+  var skipForward = false;
+  var skipBack = false;
   var skipToEnd = false;
   var skipToStart = false;
   var lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
@@ -116,6 +118,8 @@ function init() {
   const playPauseButton = document.getElementById("playpausebutton");
   const playButtonImg = document.getElementById("playbutton");
   const pauseButtonImg = document.getElementById("pausebutton");
+  const skipForwardButton = document.getElementById("skipforwardbutton");
+  const skipBackButton = document.getElementById("skipbackbutton");
   const skipToEndButton = document.getElementById("skiptoendbutton");
   const skipToStartButton = document.getElementById("skiptostartbutton");
   const reversePauseButton = document.getElementById("reversepausebutton");
@@ -170,6 +174,34 @@ function init() {
 
   }
 
+  skipForwardButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipForwardButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipForwardButton.onclick = function() {
+    
+    skipForward = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
+  skipBackButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipBackButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipBackButton.onclick = function() {
+    
+    skipBack = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
   skipToEndButton.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
   }
@@ -179,6 +211,20 @@ function init() {
   skipToEndButton.onclick = function() {
     
     skipToEnd = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
+  skipToStartButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipToStartButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipToStartButton.onclick = function() {
+    
+    skipToStart = true;
 
     lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
 
@@ -202,20 +248,6 @@ function init() {
     reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
     afterimagePass.uniforms['damp'].value = timelineReversing ? 0.0 : 1.0;
-
-  }
-
-  skipToStartButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  skipToStartButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  skipToStartButton.onclick = function() {
-    
-    skipToStart = true;
-
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
 
   }
 
@@ -243,6 +275,11 @@ function init() {
 
   recordToggle.addEventListener("change", function() {
     recording = recordToggle.checked;
+    timelinePosition = recording ? 0 : -100000;
+    if (recording) {
+      updateTimelinePositionMarker();
+      updateFireworks();
+    }
     timelinePlaying = false;
     timelineReversing = false;
     afterimagePass.uniforms['damp'].value = 0.98;
@@ -809,7 +846,7 @@ function init() {
       }
 
       else if (
-      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
+      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd && recording) 
       || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
 
         fireworks[index].launchCompleted = true;
@@ -994,9 +1031,115 @@ function init() {
         t = Math.max(Math.min(t, 1.0), 0.0);
 
         timelinePosition = t * timelineLength;
-        timelinePositionMarker.style.setProperty('left', t * 100.0 + '%');
+
+        let nearestFireworkTime = timelinePosition + 100;
+        let nearestFireworkFound = false;
+        for (let i = 0; i < fireworks.length; i++) {
+
+          if (Math.abs(fireworks[i].explodeTime - timelinePosition) < 100
+          && Math.abs(fireworks[i].explodeTime - timelinePosition) < nearestFireworkTime
+          && fireworks[i].recorded
+          && fireworks[i].active) {
+
+            nearestFireworkFound = true;
+
+            nearestFireworkTime = fireworks[i].explodeTime;
+
+          }
+
+        }
+
+        if (nearestFireworkFound) timelinePosition = nearestFireworkTime;
+
+        fireworks.forEach(firework => {
+          if (firework.launchTime + firework.launchDuration == timelinePosition) {
+            firework.launchCompleted = false;
+          }
+        });
+        
+        updateTimelinePositionMarker();
 
         updateFireworks();
+
+      }
+
+      else if (skipForward) {
+
+        let soonestFireworkTime = timelineLength + 1.0;
+        for (let i = 0; i < fireworks.length; i++) {
+
+          if (fireworks[i].explodeTime > timelinePosition
+          && fireworks[i].explodeTime < soonestFireworkTime
+          && fireworks[i].recorded
+          && fireworks[i].active) {
+
+            soonestFireworkTime = fireworks[i].explodeTime;
+
+          }
+
+        }
+
+        if (soonestFireworkTime <= timelineLength) {
+
+          afterimagePass.uniforms['damp'].value = 0.0;
+
+          timelinePosition = soonestFireworkTime;
+
+          fireworks.forEach(firework => {
+            if (firework.launchTime + firework.launchDuration == timelinePosition) {
+              firework.launchCompleted = false;
+            }
+          });
+
+          updateTimelinePositionMarker();
+
+          updateFireworks();
+
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+        
+        }
+
+        skipForward = false;
+
+      }
+
+      else if (skipBack) {
+
+        let previousFireworkTime = -1.0;
+        for (let i = 0; i < fireworks.length; i++) {
+
+          if (fireworks[i].explodeTime < timelinePosition
+          && fireworks[i].explodeTime > previousFireworkTime
+          && fireworks[i].recorded
+          && fireworks[i].active) {
+
+            previousFireworkTime = fireworks[i].explodeTime;
+
+          }
+
+        }
+
+        if (previousFireworkTime <= timelineLength) {
+
+          afterimagePass.uniforms['damp'].value = 0.0;
+
+          timelinePosition = previousFireworkTime;
+
+          fireworks.forEach(firework => {
+            if (firework.launchTime + firework.launchDuration == timelinePosition) {
+              firework.launchCompleted = false;
+            }
+          });
+
+          updateTimelinePositionMarker();
+
+          updateFireworks();
+
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+        
+        }
+
+        skipBack = false;
 
       }
 
@@ -1032,7 +1175,7 @@ function init() {
 
       }
 
-      else if (timelinePlaying) { 
+      else if (timelinePlaying) {
 
         timelinePosition += time - timeOnLastFrame;
 
