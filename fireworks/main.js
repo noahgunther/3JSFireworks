@@ -83,7 +83,9 @@ function init() {
   interesectionObjects.push(rayCastTargetPlane);
   
   const mousePagePosition = new THREE.Vector2(0.0, 0.0);
+  var timelineMousePageX;
   document.body.addEventListener('mousemove', (event) => {
+    timelineMousePageX = event.clientX;
     mousePagePosition.x = (event.pageX / window.innerWidth) * 2 - 1;
     mousePagePosition.y = (event.pageY / window.innerHeight) * 2 - 1;
     mousePagePosition.y *= -1;
@@ -109,6 +111,7 @@ function init() {
   var loopForever = true;
 
   // Timeline ui
+  const timelineLine = document.getElementById("timelinelinewrapper");
   const timelinePositionMarker = document.getElementById("timelineposition");
   const playPauseButton = document.getElementById("playpausebutton");
   const playButtonImg = document.getElementById("playbutton");
@@ -127,6 +130,23 @@ function init() {
     const currentTime = timelinePosition / timelineLength;
     timelinePositionMarker.style.setProperty('left', currentTime * 100.0 + '%');
 
+  }
+
+  timelineLine.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLine.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  var timelinePositionMarkerHeld = false;
+  timelineLine.onmousedown = function(e) {
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+    afterimagePass.uniforms['damp'].value = 0.0;
+    timelinePositionMarkerHeld = true;
+  }
+  window.onmouseup = function() {
+    afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
+    if (timelinePositionMarkerHeld) timelinePositionMarkerHeld = false;
   }
 
   playPauseButton.onmouseover = function() {
@@ -223,6 +243,8 @@ function init() {
 
   recordToggle.addEventListener("change", function() {
     recording = recordToggle.checked;
+    timelinePlaying = false;
+    timelineReversing = false;
     afterimagePass.uniforms['damp'].value = 0.98;
   });
 
@@ -608,7 +630,7 @@ function init() {
       let explosionTerminalPoints = [];
       function createExplosion(type, p, color) {
 
-        const shrapnelCount = type == "flash" ? 1 : 30;
+        const shrapnelCount = type == "flash" ? 1 : 20 + Math.floor(Math.random() * 10);
         const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
 
         for (let j = 0; j < shrapnelCount; j++) {
@@ -943,7 +965,21 @@ function init() {
 
     if (recording) {
 
-      if (skipToEnd) {
+      if (timelinePositionMarkerHeld) {
+
+        const tlRect = timelineLine.getBoundingClientRect();
+        const x = timelineMousePageX - tlRect.left;
+        var t = x / tlRect.width;
+        t = Math.max(Math.min(t, 1.0), 0.0);
+
+        timelinePosition = t * timelineLength;
+        timelinePositionMarker.style.setProperty('left', t * 100.0 + '%');
+
+        updateFireworks();
+
+      }
+
+      else if (skipToEnd) {
 
         afterimagePass.uniforms['damp'].value = 0.0;
 
