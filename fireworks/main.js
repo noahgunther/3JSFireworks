@@ -1107,7 +1107,6 @@ function init() {
           fireworks[index].explosionAudioPlayed = true;
           fireworks[index].explosionAudio.volume = Math.min(fireworks[index].explosionScale * 0.5 * Math.max(Math.random(), 0.5), 1.0);
           fireworks[index].explosionAudio.play();
-          console.log("TEST")
         }
 
         fireworks[index].explosionPlayed = true;
