@@ -1034,13 +1034,13 @@ function init() {
 
     const k = currentTime / fireworks[index].explodeDuration;
 
+    if (k <= 0.0) {
+
+      fireworks[index].explosionAudioPlayed = false;
+
+    }
+
     for (let j = 0; j < fireworks[index].explosionMeshes.length; j++) {
-
-      if (k < 0.0) {
-
-        fireworks[index].explosionAudioPlayed = false;
-
-      }
 
       if (k < 1.0 && k >= 0.0) {
 
@@ -1107,6 +1107,7 @@ function init() {
           fireworks[index].explosionAudioPlayed = true;
           fireworks[index].explosionAudio.volume = Math.min(fireworks[index].explosionScale * 0.5 * Math.max(Math.random(), 0.5), 1.0);
           fireworks[index].explosionAudio.play();
+          console.log("TEST")
         }
 
         fireworks[index].explosionPlayed = true;
