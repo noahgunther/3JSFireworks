@@ -10,40 +10,52 @@
     <div id="app"></div>
     <script type="module" src="/main.js"></script>
     <canvas id="bg"></canvas>
+    <div id="settings">
+      <div class="windowlabel">
+        <div id="settingslabel">SETTINGS</div>
+      </div>
+      <label for="recordtoggle" id="recordlabel">Record Mode:</label>
+      <input id="recordtoggle" type="checkbox">
+      <label for="nightskytoggle" id="nightskylabel">Night Sky:</label>
+      <input id="nightskytoggle" type="checkbox">
+    </div>
+    <div id="nextfirework">
+      <div class="windowlabel">
+        <div id="nextfireworklabel">NEXT FIREWORK</div>
+      </div>
+      <div id="randomparamslabel">Randomize:</div>
+      <label for="randomtypetoggle" id="randomtypelabel">Type</label>
+      <label for="randomtypetoggle" id="randomcolorlabel">Color</label>
+      <label for="randomtypetoggle" id="randomscalelabel">Scale</label>
+      <input id="randomtypetoggle" type="checkbox">
+      <input id="randomcolortoggle" type="checkbox">
+      <input id="randomscaletoggle" type="checkbox">
+      <label for="explosiontype" id="typelabel">Type:</label>
+      <select id="explosiontype">
+        <option value="burst">Burst</option>
+        <option value="drift">Drift</option>
+        <option value="pop">Pop</option>
+        <option value="flash">Flash</option>
+        <option value="zap">Zap</option>
+        <option value="flower">Flower</option>
+        <option value="flower2">Flower 2</option>
+      </select>
+      <div id="colorslabel">Colors:</div>
+      <input id="color0" class="colorpicker" type="color">
+      <input id="color1" class="colorpicker" type="color">
+      <input id="color2" class="colorpicker" type="color">
+      <div id="scalelabel">Scale:</div>
+      <div id="scaleminus">-</div>
+      <div id="scalevalue">1.0</div>
+      <div id="scaleplus">+</div>
+      <div id="audiolabel">Audio:</div>
+      <label for="launchaudiotoggle" id="launchaudiolabel">Launch</label>
+      <label id="explosionaudiolabel">Explosion</label>
+      <input id="launchaudiotoggle" type="checkbox">
+      <input id="explosionaudiotoggle" type="checkbox">
+    </div>
     <div id="outliner">
       <div class="fireworkdata">
-        <div id="recordlabel">Record:</div>
-        <input id="recordtoggle" type="checkbox">
-        <div id="randomparamslabel">Randomize:</div>
-        <div id="randomtypelabel">Type</div>
-        <div id="randomcolorlabel">Color</div>
-        <div id="randomscalelabel">Scale</div>
-        <input id="randomtypetoggle" type="checkbox">
-        <input id="randomcolortoggle" type="checkbox">
-        <input id="randomscaletoggle" type="checkbox">
-        <div id="typelabel">Type:</div>
-        <select id="explosiontype">
-          <option value="burst">Burst</option>
-          <option value="drift">Drift</option>
-          <option value="pop">Pop</option>
-          <option value="flash">Flash</option>
-          <option value="zap">Zap</option>
-          <option value="flower">Flower</option>
-          <option value="flower2">Flower 2</option>
-        </select>
-        <div id="colorslabel">Colors:</div>
-        <input id="color0" class="colorpicker" type="color">
-        <input id="color1" class="colorpicker" type="color">
-        <input id="color2" class="colorpicker" type="color">
-        <div id="scalelabel">Scale:</div>
-        <div id="scaleminus" class="scalecontrols">-</div>
-        <div id="scalevalue" class="scalecontrols">*</div>
-        <div id="scaleplus" class="scalecontrols">+</div>
-        <div id="audiolabel">Audio:</div>
-        <div id="launchaudiolabel">Launch</div>
-        <div id="explosionaudiolabel">Explosion</div>
-        <input id="launchaudiotoggle" type="checkbox">
-        <input id="explosionaudiotoggle" type="checkbox">
         <div id="positionvalues">X:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y:</div>
       </div>
     </div>

@@ -128,6 +128,7 @@ function init() {
   var loopForever = true;
 
   // Timeline ui
+  const timeline = document.getElementById("timeline");
   const timelineLine = document.getElementById("timelinelinewrapper");
   const timelinePositionMarker = document.getElementById("timelineposition");
   const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
@@ -154,6 +155,7 @@ function init() {
 
   }
   updateTimelinePositionMarker();
+  timeline.style.zIndex = recording ? '1' : '-1';
 
   timelineLine.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
@@ -339,7 +341,7 @@ function init() {
 
   }
 
-  /* Firework parameters */
+  /* Modes and parameters */
   const body = document.getElementById('body');
 
   // Recording
@@ -347,13 +349,20 @@ function init() {
   recordToggle.checked = recording;
 
   recordToggle.addEventListener("change", function() {
+
     recording = recordToggle.checked;
     timelinePosition = recording ? 0 : -100000;
+
+    timeline.style.zIndex = recording ? '1' : '-1';
     updateTimelinePositionMarker();
+
     updateFireworks();
+
     timelinePlaying = false;
     timelineReversing = false;
-    afterimagePass.uniforms['damp'].value = 0.98;
+
+    afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98;
+
   });
 
   // Random parameters toggles
@@ -389,7 +398,7 @@ function init() {
 
     const scale = (Math.random() * (scaleValueMax - scaleValueMin)) + scaleValueMin;
 
-    scalePickerDisplayValue.style.setProperty('font-size', scale * 100.0 + '%');
+    scalePickerDisplayValue.innerHTML = scale.toFixed(2);
 
     return scale;
 
@@ -484,7 +493,8 @@ function init() {
   scalePickerMinus.onclick = function() {
     if (scaleValue > scaleValueMin) {
       scaleValue -= 0.25;
-      scalePickerDisplayValue.style.setProperty('font-size', scaleValue * 100.0 + '%');
+      if (scaleValue < scaleValueMin) scaleValue = scaleValueMin;
+      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
     }
   }
 
@@ -497,7 +507,8 @@ function init() {
   scalePickerPlus.onclick = function() {
     if (scaleValue < scaleValueMax) {
       scaleValue += 0.25;
-      scalePickerDisplayValue.style.setProperty('font-size', scaleValue * 100.0 + '%');
+      if (scaleValue > scaleValueMax) scaleValue = scaleValueMax;
+      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
     }
   }
 

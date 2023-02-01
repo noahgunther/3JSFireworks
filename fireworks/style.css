@@ -13,18 +13,288 @@ body{
   overflow: hidden;
 }
 
+.windowlabel {
+  position: absolute;
+  width: 100%;
+  height: max(3.5vh, 30px);
+  background-color: rgb(192, 192, 192);
+  text-align: center;
+  font-size: 2vh;
+  color: white;
+}
+
+/* Settings and contents */
+
+#settings {
+  position: absolute;
+  top: max(6%, 2em);
+  left: 5%;
+  height: max(12%, 100px);
+  width: max(14%, 200px);
+  border-radius: 2em;
+  background-color: white;
+  overflow: hidden;
+  pointer-events: all;
+  z-index: 1;
+  user-select: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: rgb(128, 128, 128);
+}
+
+#settingslabel {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  font-size: max(1vw, 70%);
+}
+
+#recordlabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 50%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#recordtoggle {
+  position: absolute;
+  width: 10%;
+  top: 44%;
+  margin-left: 50%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+#nightskylabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 75%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#nightskytoggle {
+  position: absolute;
+  width: 10%;
+  top: 69%;
+  margin-left: 50%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+/* Next firework parameters and contents */
+
+#nextfirework {
+  position: absolute;
+  top: max(20%, 10em);
+  left: 5%;
+  height: max(28%, 280px);
+  width: max(14%, 200px);
+  border-radius: 2em;
+  background-color: white;
+  overflow: hidden;
+  pointer-events: all;
+  z-index: 1;
+  user-select: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: rgb(128, 128, 128);
+}
+
+#nextfireworklabel {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  font-size: max(1vw, 70%);
+}
+
+#randomparamslabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 22%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#randomtypelabel {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  font-size: max(0.5vw, 50%);
+}
+
+#randomcolorlabel {
+  position: absolute;
+  top: 14%;
+  left: 60%;
+  font-size: max(0.5vw, 50%);
+}
+
+#randomscalelabel {
+  position: absolute;
+  top: 14%;
+  left: 70%;
+  font-size: max(0.5vw, 50%);
+}
+
+#randomtypetoggle {
+  position: absolute;
+  width: 10%;
+  top: 20%;
+  margin-left: 50%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+#randomcolortoggle {
+  position: absolute;
+  width: 10%;
+  top: 20%;
+  margin-left: 60%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+#randomscaletoggle {
+  position: absolute;
+  width: 10%;
+  top: 20%;
+  margin-left: 70%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+#typelabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 36%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#explosiontype {
+  position: absolute;
+  top: 34%;
+  margin-left: 50%;
+  cursor: pointer;
+}
+
+#colorslabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 50%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+.colorpicker {
+  position: absolute;
+  top: 50%;
+  transform: translate(0%, -50%);
+  width: 10%;
+  height: 10%;
+  cursor: pointer;
+}
+
+#color0 {
+  margin-left: 50%;
+}
+
+#color1 {
+  margin-left: 60%;
+}
+
+#color2 {
+  margin-left: 70%;
+}
+
+#scalelabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 66%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#scaleminus {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 66%;
+  font-size: max(1.0vw, 70%);
+  font-weight: bold;
+}
+
+#scalevalue {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 63%;
+  top: 66%;
+  font-size: max(1.0vw, 70%);
+  font-weight: bold;
+}
+
+#scaleplus {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 76%;
+  top: 66%;
+  font-size: max(1.0vw, 70%);
+  font-weight: bold;
+}
+
+#audiolabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 83%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+#launchaudiolabel {
+  position: absolute;
+  top: 74%;
+  left: 50%;
+  font-size: max(0.5vw, 50%);
+}
+
+#explosionaudiolabel {
+  position: absolute;
+  top: 74%;
+  left: 70%;
+  font-size: max(0.5vw, 50%);
+}
+
+#launchaudiotoggle {
+  position: absolute;
+  width: 10%;
+  top: 80%;
+  left: 50%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
+#explosionaudiotoggle {
+  position: absolute;
+  width: 10%;
+  top: 80%;
+  left: 70%;
+  transform: scale(1.5);
+  cursor: pointer;
+}
+
 /* Outliner and contents */
 
 #outliner {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 44%;
+  top: 70%;
   left: 5%;
-  height: 75%;
+  height: 10%;
   width: max(14%, 260px);
   border-radius: 2em;
   background-color: white;
-  overflow: hidden;
+  overflow-y: scroll;
+  overflow-x: hidden;
   pointer-events: all;
   z-index: 1;
   user-select: none;
@@ -41,189 +311,12 @@ body{
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 160%;
   color: rgb(128, 128, 128);
-  overflow: hidden;
-}
-
-#recordlabel {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-}
-
-#recordtoggle {
-  position: absolute;
-  top: 12%;
-  left: 50%;
-  transform: scale(1.5);
-}
-
-#randomparamslabel {
-  position: absolute;
-  top: 25%;
-  left: 10%;
-}
-
-#randomtypelabel {
-  position: absolute;
-  top: 22%;
-  left: 48%;
-  font-size: 60%;
-}
-
-#randomcolorlabel {
-  position: absolute;
-  top: 22%;
-  left: 58%;
-  font-size: 60%;
-}
-
-#randomscalelabel {
-  position: absolute;
-  top: 22%;
-  left: 70%;
-  font-size: 60%;
-}
-
-#randomtypetoggle {
-  position: absolute;
-  top: 27%;
-  left: 50%;
-  transform: scale(1.5);
-}
-
-#randomcolortoggle {
-  position: absolute;
-  top: 27%;
-  left: 60%;
-  transform: scale(1.5);
-}
-
-#randomscaletoggle {
-  position: absolute;
-  top: 27%;
-  left: 70%;
-  transform: scale(1.5);
-}
-
-#typelabel {
-  position: absolute;
-  top: 40%;
-  left: 10%;
-}
-
-#explosiontype {
-  position: absolute;
-  top: 42%;
-  left: 30%;
-}
-
-#colorslabel {
-  position: absolute;
-  top: 60%;
-  left: 10%;
-}
-
-.colorpicker {
-  position: absolute;
-  top: 65%;
-  transform: translate(0%, -50%);
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgb(128, 128, 128);
-  cursor: pointer;
-}
-
-#color0 {
-  margin-left: 25%;
-}
-
-#color1 {
-  margin-left: 40%;
-}
-
-#color2 {
-  margin-left: 55%;
-}
-
-#scalelabel {
-  position: absolute;
-  top: 75%;
-  left: 10%;
-}
-
-.scalecontrols {
-  position: absolute;
-  font-size: 100%;
-}
-
-#scaleminus {
-  transform: translate(-50%, -50%);
-  margin-left: 42%;
-  top: 80%;
-  border: 2px solid rgb(128, 128, 128);
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 0px;
-  padding-bottom: 3px;
-}
-
-#scalevalue {
-  font-size: 100%;
-  margin-left: 50%;
-  top: 84%;
-  left: 10%;
-  transform: translate(-50%, -50%);
-}
-
-#scaleplus {
-  transform: translate(-50%, -50%);
-  margin-left: 62%;
-  top: 80%;
-  border: 2px solid rgb(128, 128, 128);
-  padding-left: 7px;
-  padding-right: 7px;
-  padding-top: 0px;
-  padding-bottom: 3px;
 }
 
 #positionvalues {
   position: absolute;
   top: 100%;
   left: 10%;
-}
-
-#audiolabel {
-  position: absolute;
-  top: 90%;
-  left: 10%;
-}
-
-#launchaudiolabel {
-  position: absolute;
-  top: 88%;
-  left: 48%;
-  font-size: 60%;
-}
-
-#explosionaudiolabel {
-  position: absolute;
-  top: 88%;
-  left: 63%;
-  font-size: 60%;
-}
-
-#launchaudiotoggle {
-  position: absolute;
-  top: 92%;
-  left: 50%;
-  transform: scale(1.5);
-}
-
-#explosionaudiotoggle {
-  position: absolute;
-  top: 92%;
-  left: 66%;
-  transform: scale(1.5);
 }
 
 /* Timeline and contents */
