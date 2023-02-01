@@ -243,17 +243,32 @@ body{
   user-select: none;
 }
 
-#timelinelength {
+.timelinelength {
   position: absolute;
-  transform: translate(0%, -50%);
-  top: 50%;
   float: left;
-  left: min(2vh, 2vw);
+  top: 50%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: min(2.5vh, 2.5vw);
   font-weight: bold;
   color: rgb(128, 128, 128);
   overflow: hidden;
+}
+
+#timelinelengthdecrease {
+  transform: translate(-50%, -58%);
+  left: min(2vh, 2vw);
+  font-size: min(4vh, 4vw);
+}
+
+#timelinelengthvalue {
+  transform: translate(-50%, -50%);
+  left: min(6.5vh, 6.5vw);
+  font-size: min(2.5vh, 2.5vw);
+}
+
+#timelinelengthincrease {
+  transform: translate(-50%, -58%);
+  left: min(11vh, 11vw);
+  font-size: min(4vh, 4vw);
 }
 
 .timelinebuttonsleft {

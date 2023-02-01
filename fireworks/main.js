@@ -12,9 +12,15 @@ import launch0AudioUrl from "./audio/launch0.mp3?url";
 import launch1AudioUrl from "./audio/launch1.mp3?url";
 import launch2AudioUrl from "./audio/launch2.mp3?url";
 import launch3AudioUrl from "./audio/launch3.mp3?url";
+import launch4AudioUrl from "./audio/launch4.mp3?url";
 var launchAudios = [];
-launchAudios.push(launch0AudioUrl, launch1AudioUrl, launch2AudioUrl, launch3AudioUrl);
-import explosionAudioUrl from "./audio/explosion0.mp3?url";
+launchAudios.push(launch0AudioUrl, launch1AudioUrl, launch2AudioUrl, launch3AudioUrl, launch4AudioUrl);
+import explosion0AudioUrl from "./audio/explosion0.mp3?url";
+import explosion1AudioUrl from "./audio/explosion1.mp3?url";
+import explosion2AudioUrl from "./audio/explosion2.mp3?url";
+import explosionCrackleAudioUrl from "./audio/explosionCrackle.mp3?url";
+var explosionAudios = [];
+explosionAudios.push(explosion0AudioUrl, explosion1AudioUrl, explosion2AudioUrl);
 
 /* Start threejs scene when window loaded */
 window.addEventListener("load", init, false);
@@ -109,7 +115,7 @@ function init() {
   scene.background = new THREE.Color(0x000005);
 
   /* Timeline */
-  var timelinePosition = 0;
+  var timelinePosition = -100000;
   var timelineLength = 10000;
   var recording = false;
   var timelinePlaying = false;
@@ -124,6 +130,9 @@ function init() {
   // Timeline ui
   const timelineLine = document.getElementById("timelinelinewrapper");
   const timelinePositionMarker = document.getElementById("timelineposition");
+  const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
+  const timelineLengthIncreaseButton = document.getElementById("timelinelengthincrease");
+  const timelineLengthDisplayValue = document.getElementById("timelinelengthvalue");
   const playPauseButton = document.getElementById("playpausebutton");
   const playButtonImg = document.getElementById("playbutton");
   const pauseButtonImg = document.getElementById("pausebutton");
@@ -144,6 +153,7 @@ function init() {
     timelinePositionMarker.style.setProperty('left', currentTime * 100.0 + '%');
 
   }
+  updateTimelinePositionMarker();
 
   timelineLine.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
@@ -152,14 +162,68 @@ function init() {
     body.style.setProperty('cursor', 'default');
   }
   var timelinePositionMarkerHeld = false;
-  timelineLine.onmousedown = function(e) {
+  timelineLine.onmousedown = function() {
     lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
     afterimagePass.uniforms['damp'].value = 0.0;
     timelinePositionMarkerHeld = true;
   }
   window.onmouseup = function() {
-    afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
-    if (timelinePositionMarkerHeld) timelinePositionMarkerHeld = false;
+    if (timelinePositionMarkerHeld) { 
+      afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
+      timelinePositionMarkerHeld = false; 
+    }
+  }
+
+  function updateTimelineLength() {
+
+    let timelineDisplayMinutes = Math.floor(timelineLength * 0.001 / 60);
+    let timelineDisplaySeconds = timelineLength * 0.001 % 60;
+    if (timelineDisplaySeconds < 10) timelineDisplaySeconds = "0" + timelineDisplaySeconds;
+    timelineLengthDisplayValue.innerHTML = "0" + timelineDisplayMinutes + ":" + timelineDisplaySeconds;
+
+    if (timelinePosition > timelineLength) timelinePosition = timelineLength;
+
+    fireworks.forEach(firework => {
+      if (firework.recorded) {
+        const fireworkTime = firework.explodeTime / timelineLength;
+        if (fireworkTime <= timelineLength) {
+          firework.marker.visibility = "visible";
+          firework.marker.style.setProperty('left', fireworkTime * 100.0 + '%');
+        }
+        else {
+          firework.marker.visibility = "hidden";
+        }
+      }
+    });
+
+    updateTimelinePositionMarker();
+
+  }
+
+  timelineLengthDecreaseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLengthDecreaseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  timelineLengthDecreaseButton.onclick = function() {
+    if (timelineLength > 10000) {
+      timelineLength -= 5000;
+      updateTimelineLength();
+    }
+  }
+
+  timelineLengthIncreaseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLengthIncreaseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  timelineLengthIncreaseButton.onclick = function() {
+    if (timelineLength < 60000) {
+      timelineLength += 5000;
+      updateTimelineLength();
+    }
   }
 
   playPauseButton.onmouseover = function() {
@@ -691,8 +755,8 @@ function init() {
     updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       const launchDuration = 1000;
-      let explodeDuration = 500;
-      if (explosionType == "pop") explodeDuration = 350;
+      let explodeDuration = 420;
+      if (explosionType == "pop") explodeDuration = 300;
       else if (explosionType == "flash") explodeDuration = 200;
 
       const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
@@ -773,6 +837,7 @@ function init() {
       }
 
       const randomLaunchAudioUrl = launchAudios[Math.floor(Math.random() * launchAudios.length)];
+      const randomExplosionAudioUrl = explosionType != "pop" ? explosionAudios[Math.floor(Math.random() * explosionAudios.length)] : explosionCrackleAudioUrl;
 
       fireworks.push(
         new Firework(
@@ -785,7 +850,7 @@ function init() {
           new Audio(randomLaunchAudioUrl),
           explosionAudioBool,
           false,
-          new Audio(explosionAudioUrl),
+          new Audio(randomExplosionAudioUrl),
           false,
           false,
           false,
@@ -1091,11 +1156,11 @@ function init() {
 
         timelinePosition = t * timelineLength;
 
-        let nearestFireworkTime = timelinePosition + 100;
+        let nearestFireworkTime = timelinePosition + (timelineLength / 100);
         let nearestFireworkFound = false;
         for (let i = 0; i < fireworks.length; i++) {
 
-          if (Math.abs(fireworks[i].explodeTime - timelinePosition) < 100
+          if (Math.abs(fireworks[i].explodeTime - timelinePosition) < (timelineLength / 100)
           && Math.abs(fireworks[i].explodeTime - timelinePosition) < nearestFireworkTime
           && fireworks[i].recorded
           && fireworks[i].active) {
