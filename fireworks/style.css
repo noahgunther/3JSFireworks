@@ -394,6 +394,10 @@ body{
   cursor: pointer;
 }
 
+.fireworkdatacolorpicker {
+  position: relative;
+}
+
 #positionvalues {
   position: absolute;
   top: 100%;

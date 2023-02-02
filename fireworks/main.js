@@ -390,14 +390,27 @@ function init() {
         fireworkData.appendChild(fireworkDataColorsLabel);
 
         const fireworkDataColor0Input = document.createElement('fireworkdatacolor0input');
-        fireworkDataColor0Input.className = 'fireworkdatacolor0input';
-        fireworkDataColor0Input.innerHTML = '<input class="colorpicker" type="color">';
+        fireworkDataColor0Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
         fireworkData.appendChild(fireworkDataColor0Input);
+
+        const fireworkDataColor1Input = document.createElement('fireworkdatacolor1input');
+        fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
+        fireworkData.appendChild(fireworkDataColor1Input);
+
+        const fireworkDataColor2Input = document.createElement('fireworkdatacolor2input');
+        fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
+        fireworkData.appendChild(fireworkDataColor2Input);
 
         const color0Input = fireworkDataColor0Input.children[0];
         color0Input.value = rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255));
 
-        // Update explosion type if input changes
+        const color1Input = fireworkDataColor1Input.children[0];
+        color1Input.value = rgbToHex(Math.floor(firework.color1.r * 255), Math.floor(firework.color1.g * 255), Math.floor(firework.color1.b * 255));
+
+        const color2Input = fireworkDataColor2Input.children[0];
+        color2Input.value = rgbToHex(Math.floor(firework.color2.r * 255), Math.floor(firework.color2.g * 255), Math.floor(firework.color2.b * 255));
+
+        // Update colors if inputs change
         color0Input.addEventListener("input", (event) => {
 
           // Reset afterimage pass
@@ -409,11 +422,52 @@ function init() {
           firework.color0 = new THREE.Color(newColor0.r, newColor0.g, newColor0.b);
 
           if (firework.pathMesh.material != null) {
-            console.log("HELLO")
             firework.pathMesh.material.color = firework.color0;
+          }
+          if (firework.projectileMesh.material != null) {
+            firework.projectileMesh.material.color = firework.color0;
           }
 
           firework.marker.style.setProperty('background-color', rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255)));
+
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+        });
+
+        color1Input.addEventListener("input", (event) => {
+
+          // Reset afterimage pass
+          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+          afterimagePass.uniforms['damp'].value = 0.0;
+
+          const newColor1 = hexToRgb(color1Input.value);
+
+          firework.color1 = new THREE.Color(newColor1.r, newColor1.g, newColor1.b);
+
+          firework.explosionMeshes.forEach(explosionMesh => {
+            if (explosionMesh != null) {
+              explosionMesh.material.color = firework.color1;
+            }
+          });
+          firework.explosionPathMeshes.forEach(explosionPathMesh => {
+            if (explosionPathMesh != null) {
+              explosionPathMesh.material.color = firework.color1;
+            }
+          });
+
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+        });
+
+        color2Input.addEventListener("input", (event) => {
+
+          // Reset afterimage pass
+          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+          afterimagePass.uniforms['damp'].value = 0.0;
+
+          const newColor2 = hexToRgb(color2Input.value);
+
+          firework.color2 = new THREE.Color(newColor2.r, newColor2.g, newColor2.b);
 
           requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
 
@@ -449,6 +503,43 @@ function init() {
     outliner.style.zIndex = recording ? '1' : '-1';
     updateTimelinePositionMarker();
 
+    // Dispose of any current geometry
+    fireworks.forEach(firework => {
+
+      if (firework.projectileMesh != null) {
+        scene.remove(firework.projectileMesh);
+        firework.projectileMesh.geometry.dispose();
+        firework.projectileMesh.material.dispose();
+      }
+
+      if (firework.pathMesh != null) {
+        scene.remove(firework.pathMesh);
+        firework.pathMesh.geometry.dispose();
+        firework.pathMesh.material.dispose();
+      }
+
+      firework.explosionMeshes.forEach(explosionMesh => {
+        
+        if (explosionMesh != null) { 
+          scene.remove(explosionMesh);
+          explosionMesh.geometry.dispose();
+          explosionMesh.material.dispose();
+        }
+
+      });
+
+      firework.explosionPathMeshes.forEach(explosionPathMesh => {
+        
+        if (explosionPathMesh != null) { 
+          scene.remove(explosionPathMesh);
+          explosionPathMesh.geometry.dispose();
+          explosionPathMesh.material.dispose();
+        }
+
+      });
+      
+    });
+
     updateFireworks();
 
     updateOutlinerData();
@@ -456,7 +547,9 @@ function init() {
     timelinePlaying = false;
     timelineReversing = false;
 
-    afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98;
+    afterimagePass.uniforms['damp'].value = 0.0;
+
+    requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98; });
 
   });
 
@@ -1351,7 +1444,9 @@ function init() {
 
   function updateFireworks() {
     for (let i = 0; i < fireworks.length; i++) {
-      animateFirework(i);
+      if (fireworks[i].recorded == recording) {
+        animateFirework(i);
+      }
     }
   }
 
