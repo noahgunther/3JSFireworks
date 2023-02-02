@@ -23,11 +23,68 @@ body{
   color: white;
 }
 
+/* Main menu and contents */
+
+#mainmenu {
+  position: absolute;
+  top: max(6%, 2em);
+  left: 5%;
+  height: max(23%, 160px);
+  width: max(14%, 200px);
+  border-radius: 2em;
+  background-color: white;
+  overflow: hidden;
+  pointer-events: all;
+  z-index: 1;
+  user-select: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  font-size: max(1vw, 100%);
+  background-color: white;
+  color: rgb(128, 128, 128);
+}
+
+#sharelink {
+  position: absolute;
+  top: 0%;
+  margin: auto;
+  width: 100%;
+  height: 25%;
+  border-bottom: .3vh dashed rgb(128, 128, 128);
+}
+
+#togglemodelink {
+  position: absolute;
+  top: 25%;
+  margin: auto;
+  width: 100%;
+  height: 25%;
+  vertical-align: middle;
+  border-bottom: .3vh dashed rgb(128, 128, 128);
+}
+
+#documentationlink {
+  position: absolute;
+  top: 50%;
+  margin: auto;
+  width: 100%;
+  height: 25%;
+  border-bottom: .3vh dashed rgb(128, 128, 128);
+}
+
+#aboutlink {
+  position: absolute;
+  top: 75%;
+  margin: auto;
+  width: 100%;
+  height: 25%;
+}
+
 /* Settings and contents */
 
 #settings {
   position: absolute;
-  top: max(6%, 2em);
+  top: max(34%, 6em);
   left: 5%;
   height: max(12%, 100px);
   width: max(14%, 200px);
@@ -86,9 +143,9 @@ body{
 
 #nextfirework {
   position: absolute;
-  top: max(20%, 10em);
+  top: max(52%, 10em);
   left: 5%;
-  height: max(28%, 280px);
+  height: max(28%, 200px);
   width: max(14%, 200px);
   border-radius: 2em;
   background-color: white;
@@ -286,18 +343,25 @@ body{
 
 #outliner {
   position: absolute;
-  transform: translate(0%, -50%);
-  top: 70%;
-  left: 5%;
-  height: 10%;
-  width: max(14%, 260px);
+  top: max(6%, 2em);
+  right: 5%;
+  height: 74%;
+  width: max(14%, 200px);
   border-radius: 2em;
   background-color: white;
   overflow-y: scroll;
   overflow-x: hidden;
   pointer-events: all;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   z-index: 1;
   user-select: none;
+}
+
+#outlinerlabel {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  font-size: max(1vw, 70%);
 }
 
 .fireworkdata {
@@ -440,7 +504,7 @@ body{
   padding-top: min(4vh, 4vw);
   border-radius: 100%;
   background-color: white;
-  border: 0.33vh solid rgb(128, 128, 128);;
+  border: 0.33vh solid rgb(128, 128, 128);
   pointer-events: all;
   z-index: 3;
   user-select: none;

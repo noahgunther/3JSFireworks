@@ -131,6 +131,7 @@ function init() {
 
   // Timeline ui
   const timeline = document.getElementById("timeline");
+  const outliner = document.getElementById("outliner");
   const timelineLine = document.getElementById("timelinelinewrapper");
   const timelinePositionMarker = document.getElementById("timelineposition");
   const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
@@ -158,6 +159,7 @@ function init() {
   }
   updateTimelinePositionMarker();
   timeline.style.zIndex = recording ? '1' : '-1';
+  outliner.style.zIndex = recording ? '1' : '-1';
 
   timelineLine.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
@@ -356,6 +358,7 @@ function init() {
     timelinePosition = recording ? 0 : -100000;
 
     timeline.style.zIndex = recording ? '1' : '-1';
+    outliner.style.zIndex = recording ? '1' : '-1';
     updateTimelinePositionMarker();
 
     updateFireworks();
