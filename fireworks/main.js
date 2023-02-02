@@ -129,7 +129,7 @@ function init() {
   var timelineReversing = false;
   var loopForever = true;
 
-  // Timeline ui
+  // Timeline UI
   const timeline = document.getElementById("timeline");
   const outliner = document.getElementById("outliner");
   const timelineLine = document.getElementById("timelinelinewrapper");
@@ -344,6 +344,28 @@ function init() {
 
   }
 
+  /* Outliner firework data */
+
+  function updateOutlinerData() {
+
+    fireworks.forEach(firework => {
+      
+      if (firework.recorded && firework.explodeTime == timelinePosition) {
+
+        console.log(firework.recorded);
+
+      }
+
+    });
+
+  }
+
+  function clearOutlinerData() {
+
+    
+
+  }
+
   /* Modes and parameters */
   const body = document.getElementById('body');
 
@@ -361,6 +383,8 @@ function init() {
     updateTimelinePositionMarker();
 
     updateFireworks();
+
+    updateOutlinerData();
 
     timelinePlaying = false;
     timelineReversing = false;
@@ -769,131 +793,137 @@ function init() {
 
     updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
-      const launchDuration = 1000;
-      let explodeDuration = 420;
-      if (explosionType == "pop") explodeDuration = 300;
-      else if (explosionType == "flash") explodeDuration = 200;
+    const launchDuration = 1000;
+    let explodeDuration = 420;
+    if (explosionType == "pop") explodeDuration = 300;
+    else if (explosionType == "flash") explodeDuration = 200;
 
-      const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
-      const terminalPointY = (Math.round((mousePagePosition.y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
+    const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
+    const terminalPointY = (Math.round((mousePagePosition.y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
 
-      const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
-      let explosionMeshes = [];
-      let explosionPathMeshes = [];
-      let explosionTerminalPoints = [];
-      function createExplosion(type, p, color) {
+    const terminalPoint = new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+    let explosionMeshes = [];
+    let explosionPathMeshes = [];
+    let explosionTerminalPoints = [];
+    function createExplosion(type, p, color) {
 
-        const shrapnelCount = type == "flash" ? 1 : 20 + Math.floor(Math.random() * 10);
-        const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
+      const shrapnelCount = type == "flash" ? 1 : 20 + Math.floor(Math.random() * 10);
+      const radiusRandom = Math.max(Math.random() * 0.25, 0.15) * scaleValue;
 
-        for (let j = 0; j < shrapnelCount; j++) {
+      for (let j = 0; j < shrapnelCount; j++) {
 
-          explosionMeshes.push(createExplosionComponent(type));
+        explosionMeshes.push(createExplosionComponent(type));
 
-          explosionPathMeshes.push(null);
+        explosionPathMeshes.push(null);
 
-          if (type == "burst" || type == "pop") {
-            const phi = Math.acos(1.0 - 2.0*j/shrapnelCount);
-            const theta = 6.28 * j/1.618;
-            explosionTerminalPoints.push(new THREE.Vector3(
-              (Math.cos(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom,
-              (Math.sin(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom, 
-              (Math.sin(theta)*Math.cos(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom
-            ));
-          }
-          else if (type == "drift" || type == "zap") {
-            explosionTerminalPoints.push(new THREE.Vector3(
-              (Math.random() * 2 - 1) * radiusRandom,
-              (Math.random() * 2 - 1) * radiusRandom, 
-              (Math.random() * 2 - 1) * radiusRandom
-            ));
-          }
-          else if (type == "flash") {
-            explosionTerminalPoints.push(new THREE.Vector3(0.0, 0.0, 0.0));
-          }
-          else if (type == "flower" || type == "flower2") {
-            explosionTerminalPoints.push(new THREE.Vector3(
-              (Math.sin(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33,
-              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33, 
-              (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33
-            ));
-          }
-
+        if (type == "burst" || type == "pop") {
+          const phi = Math.acos(1.0 - 2.0*j/shrapnelCount);
+          const theta = 6.28 * j/1.618;
+          explosionTerminalPoints.push(new THREE.Vector3(
+            (Math.cos(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom,
+            (Math.sin(theta)*Math.sin(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom, 
+            (Math.sin(theta)*Math.cos(phi) + (Math.random() * 0.2 - 0.1)) * radiusRandom
+          ));
         }
-
-        function createExplosionComponent(type) {
-
-          const segmentCount = type == "pop" || type == "flash" ? 32 : 3;
-          const shrapnelGeometry = new THREE.SphereGeometry(0.0025, segmentCount, segmentCount);
-          const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
-          const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
-          scene.add(shrapnel);
-          shrapnel.position.set(p.x, p.y, p.z);
-
-          return shrapnel;
-
+        else if (type == "drift" || type == "zap") {
+          explosionTerminalPoints.push(new THREE.Vector3(
+            (Math.random() * 2 - 1) * radiusRandom,
+            (Math.random() * 2 - 1) * radiusRandom, 
+            (Math.random() * 2 - 1) * radiusRandom
+          ));
+        }
+        else if (type == "flash") {
+          explosionTerminalPoints.push(new THREE.Vector3(0.0, 0.0, 0.0));
+        }
+        else if (type == "flower" || type == "flower2") {
+          explosionTerminalPoints.push(new THREE.Vector3(
+            (Math.sin(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33,
+            (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33, 
+            (Math.cos(j) + (Math.random() * 0.2 - 0.1)) * radiusRandom * 0.33
+          ));
         }
 
       }
 
-      createExplosion(explosionType, terminalPoint, color1);
+      function createExplosionComponent(type) {
 
-      // Create timeline marker
-      let marker = null;
-      if (recording) {
+        const segmentCount = type == "pop" || type == "flash" ? 32 : 3;
+        const shrapnelGeometry = new THREE.SphereGeometry(0.0025, segmentCount, segmentCount);
+        const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
+        const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
+        scene.add(shrapnel);
+        shrapnel.position.set(p.x, p.y, p.z);
 
-        marker = document.createElement('marker');
-        marker.className = 'timelinemarker';
-        marker.style.setProperty('left', (timelinePosition / timelineLength) * 100.0 + '%');
-        marker.style.setProperty('background-color', rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255)));
-        
-        timelineLine.appendChild(marker);
+        return shrapnel;
 
       }
 
-      const randomLaunchAudioUrl = launchAudios[Math.floor(Math.random() * launchAudios.length)];
-      const randomExplosionAudioUrl = explosionType != "pop" ? explosionAudios[Math.floor(Math.random() * explosionAudios.length)] : explosionCrackleAudioUrl;
+    }
 
-      fireworks.push(
-        new Firework(
-          true,
-          recording,
-          recording,
-          false,
-          launchAudioBool,
-          false,
-          new Audio(randomLaunchAudioUrl),
-          explosionAudioBool,
-          false,
-          new Audio(randomExplosionAudioUrl),
-          false,
-          false,
-          false,
-          launchDuration,
-          recording ? timelinePosition - launchDuration : Date.now(),
-          setLaunchPosition(),
-          terminalPoint,
-          explodeDuration,
-          recording ? timelinePosition : Date.now() + launchDuration,
-          explosionTerminalPoints,
-          currentProjectile,
-          null,
-          explosionMeshes,
-          explosionPathMeshes,
-          explosionType,
-          color0,
-          color1,
-          color2,
-          scaleValue,
-          new THREE.Vector2(
-            terminalPointX, 
-            terminalPointY
-          ),
-          marker
-        )
-      );
+    createExplosion(explosionType, terminalPoint, color1);
 
-      if (!timelinePlaying && recording) updateFireworks();
+    // Create timeline marker
+    let marker = null;
+    if (recording) {
+
+      marker = document.createElement('marker');
+      marker.className = 'timelinemarker';
+      marker.style.setProperty('left', (timelinePosition / timelineLength) * 100.0 + '%');
+      marker.style.setProperty('background-color', rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255)));
+      
+      timelineLine.appendChild(marker);
+
+    }
+
+    const randomLaunchAudioUrl = launchAudios[Math.floor(Math.random() * launchAudios.length)];
+    const randomExplosionAudioUrl = explosionType != "pop" ? explosionAudios[Math.floor(Math.random() * explosionAudios.length)] : explosionCrackleAudioUrl;
+
+    fireworks.push(
+      new Firework(
+        true,
+        recording,
+        recording,
+        false,
+        launchAudioBool,
+        false,
+        new Audio(randomLaunchAudioUrl),
+        explosionAudioBool,
+        false,
+        new Audio(randomExplosionAudioUrl),
+        false,
+        false,
+        false,
+        launchDuration,
+        recording ? timelinePosition - launchDuration : Date.now(),
+        setLaunchPosition(),
+        terminalPoint,
+        explodeDuration,
+        recording ? timelinePosition : Date.now() + launchDuration,
+        explosionTerminalPoints,
+        currentProjectile,
+        null,
+        explosionMeshes,
+        explosionPathMeshes,
+        explosionType,
+        color0,
+        color1,
+        color2,
+        scaleValue,
+        new THREE.Vector2(
+          terminalPointX, 
+          terminalPointY
+        ),
+        marker
+      )
+    );
+
+    if (!timelinePlaying && recording) {
+      
+      updateFireworks();
+
+      updateOutlinerData();
+
+    }
 
   }
 
@@ -1151,6 +1181,7 @@ function init() {
   /* Scene render and animate */
   const clock = new THREE.Clock();
   var timeOnLastFrame = 0.0;
+  var lastTimelinePosition;
 
   function updateFireworks() {
     for (let i = 0; i < fireworks.length; i++) {
@@ -1195,10 +1226,16 @@ function init() {
             firework.launchCompleted = false;
           }
         });
-        
-        updateTimelinePositionMarker();
 
-        updateFireworks();
+        if (timelinePosition != lastTimelinePosition) {
+        
+          updateTimelinePositionMarker();
+
+          updateFireworks();
+
+          updateOutlinerData();
+
+        }
 
       }
 
@@ -1233,6 +1270,8 @@ function init() {
           updateTimelinePositionMarker();
 
           updateFireworks();
+
+          updateOutlinerData();
 
           requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
         
@@ -1274,6 +1313,8 @@ function init() {
 
           updateFireworks();
 
+          updateOutlinerData();
+
           requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
         
         }
@@ -1292,6 +1333,8 @@ function init() {
 
         updateFireworks();
 
+        updateOutlinerData();
+
         skipToEnd = false;
 
         requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
@@ -1307,6 +1350,8 @@ function init() {
         updateTimelinePositionMarker();
 
         updateFireworks();
+
+        updateOutlinerData();
 
         skipToStart = false;
 
@@ -1344,6 +1389,8 @@ function init() {
 
         updateFireworks();
 
+        clearOutlinerData();
+
       }
       
       else if (timelineReversing) {
@@ -1364,7 +1411,11 @@ function init() {
 
         updateFireworks();
 
+        clearOutlinerData();
+
       }
+
+      lastTimelinePosition = timelinePosition;
 
     }
 
