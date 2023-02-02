@@ -191,13 +191,12 @@ function init() {
 
     fireworks.forEach(firework => {
       if (firework.recorded) {
-        const fireworkTime = firework.explodeTime / timelineLength;
-        if (fireworkTime <= timelineLength) {
-          firework.marker.visibility = "visible";
-          firework.marker.style.setProperty('left', fireworkTime * 100.0 + '%');
+        if (firework.explodeTime <= timelineLength) {
+          firework.marker.style.visibility = "visible";
+          firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
         }
         else {
-          firework.marker.visibility = "hidden";
+          firework.marker.style.visibility = "hidden";
         }
       }
     });
