@@ -358,7 +358,6 @@ function init() {
         const fireworkData = document.createElement('fireworkdata');
         fireworkData.id = firework.id;
         fireworkData.className = 'fireworkdata';
-        fireworkData.style.setProperty('background-color', rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255)));
         
         // Firework explosion type
         const fireworkDataTypeLabel = document.createElement('fireworkdatatypelabel');
@@ -367,8 +366,7 @@ function init() {
         fireworkData.appendChild(fireworkDataTypeLabel);
 
         const fireworkDataTypeInput = document.createElement('fireworkdatatypeinput');
-        fireworkDataTypeInput.className = 'fireworkdatatypeinput';
-        fireworkDataTypeInput.innerHTML = '<select> <option value="burst">Burst</option> <option value="drift">Drift</option> <option value="pop">Pop</option> <option value="flash">Flash</option> <option value="zap">Zap</option> <option value="flower">Flower</option> <option value="flower2">Flower 2</option> </select>';
+        fireworkDataTypeInput.innerHTML = '<select class="fireworkdatatypeinput"> <option value="burst">Burst</option> <option value="drift">Drift</option> <option value="pop">Pop</option> <option value="flash">Flash</option> <option value="zap">Zap</option> <option value="flower">Flower</option> <option value="flower2">Flower 2</option> </select>';
         fireworkData.appendChild(fireworkDataTypeInput);
 
         const typeInput = fireworkDataTypeInput.children[0];
@@ -390,15 +388,15 @@ function init() {
         fireworkData.appendChild(fireworkDataColorsLabel);
 
         const fireworkDataColor0Input = document.createElement('fireworkdatacolor0input');
-        fireworkDataColor0Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
+        fireworkDataColor0Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 50%">';
         fireworkData.appendChild(fireworkDataColor0Input);
 
         const fireworkDataColor1Input = document.createElement('fireworkdatacolor1input');
-        fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
+        fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 60%">';
         fireworkData.appendChild(fireworkDataColor1Input);
 
         const fireworkDataColor2Input = document.createElement('fireworkdatacolor2input');
-        fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color">';
+        fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 70%">';
         fireworkData.appendChild(fireworkDataColor2Input);
 
         const color0Input = fireworkDataColor0Input.children[0];

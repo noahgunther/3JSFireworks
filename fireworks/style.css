@@ -349,8 +349,7 @@ body{
   width: max(14%, 200px);
   border-radius: 2em;
   background-color: white;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow: hidden;
   pointer-events: all;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   z-index: 1;
@@ -368,6 +367,8 @@ body{
   position: absolute;
   width: 100%;
   height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .fireworkdata {
@@ -377,25 +378,40 @@ body{
   width: 100%;
   height: 15%;
   border-bottom: .3vh dashed rgb(128, 128, 128);
+  color: rgb(128, 128, 128);
 }
 
 .fireworkdatatypelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 36%;
+  top: 16%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
-#fireworkdatatypeinput {
+.fireworkdatatypeinput {
   position: absolute;
-  top: 34%;
+  transform: translate(0%, -50%);
+  top: 16%;
   margin-left: 50%;
   cursor: pointer;
 }
 
+.fireworkdatacolorslabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 40%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
 .fireworkdatacolorpicker {
-  position: relative;
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 40%;
+  width: 10%;
+  height: 20%;
+  cursor: pointer;
 }
 
 #positionvalues {
