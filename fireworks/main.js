@@ -168,6 +168,107 @@ function init() {
 
   /* Main menu */
   const mainMenu = document.getElementById("mainmenu");
+  const shareShowLink = document.getElementById("sharelink");
+  const toggleSiteModeLink = document.getElementById("togglemodelink");
+  const documentationLink = document.getElementById("documentationlink");
+  const aboutLink = document.getElementById("aboutlink");
+
+  shareShowLink.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  shareShowLink.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  shareShowLink.onclick = function() {
+    
+  }
+
+  var siteMode = 'edit';
+  toggleSiteModeLink.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  toggleSiteModeLink.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  toggleSiteModeLink.onclick = function() {
+
+    toggleSiteMode();
+
+  }
+
+  function toggleSiteMode() {
+
+    afterimagePass.uniforms['damp'].value = 0.0;
+
+    siteMode = siteMode == 'edit' ? 'playback' : 'edit';
+    toggleSiteModeLink.innerHTML = siteMode == 'edit' ? 'PLAYBACK MODE' : 'EDIT MODE';
+
+    if (siteMode == 'edit') {
+  
+      timelinePlaying = false;
+      playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+      pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
+      timelinePosition = 0.0;
+
+      updateTimelinePositionMarker();
+
+      updateFireworks();
+
+      editorSettings.style.zIndex = '1';
+      nextFirework.style.zIndex = '1';
+
+      trashAllButton.style.zIndex = recording ? '1' : '-1';
+      timeline.style.zIndex = recording ? '1' : '-1';
+      outliner.style.zIndex = recording ? '1' : '-1';
+
+      requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = 1.0; });
+
+    }
+
+    else {
+
+      recording = true;
+
+      timelinePosition = 0.0;
+      timelinePlaying = true;
+
+      fireworks.forEach(firework => {
+        if (firework.recorded && firework.explodeTime == 0.0) {
+          firework.playLaunchOneShot = true;
+        }
+      });
+
+      editorSettings.style.zIndex = '-1';
+      nextFirework.style.zIndex = '-1';
+
+      toggleUI();
+
+      requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = 0.98; });
+
+    }
+
+  }
+
+  documentationLink.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  documentationLink.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  documentationLink.onclick = function() {
+    
+  }
+
+  aboutLink.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  aboutLink.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  aboutLink.onclick = function() {
+    window.open("https://noahgunther.com");
+  }
 
   /* Editor settings */
   const editorSettings = document.getElementById("settings");
@@ -909,9 +1010,11 @@ function init() {
       editorSettings.style.visibility = 'visible';
       nextFirework.style.visibility = 'visible';
 
-      trashAllButton.style.zIndex = recording ? '1' : '-1';
-      timeline.style.zIndex = recording ? '1' : '-1';
-      outliner.style.zIndex = recording ? '1' : '-1';
+      if (siteMode == 'edit') {
+        trashAllButton.style.zIndex = recording ? '1' : '-1';
+        timeline.style.zIndex = recording ? '1' : '-1';
+        outliner.style.zIndex = recording ? '1' : '-1';
+      }
 
       uiHidden = true;
 
@@ -1115,26 +1218,30 @@ function init() {
 
   canvas.onmousedown = function() {
 
-    if (randomizeTypeBool) explosionType = randomizeExplosionType();
-    if (randomizeColorBool) {  
-      color0 = randomizeColor();
-      color1 = randomizeColor();
-      color2 = randomizeColor();
-      updateColorPickers();
+    if (siteMode == 'edit') {
+
+      if (randomizeTypeBool) explosionType = randomizeExplosionType();
+      if (randomizeColorBool) {  
+        color0 = randomizeColor();
+        color1 = randomizeColor();
+        color2 = randomizeColor();
+        updateColorPickers();
+      }
+      if (randomizeScaleBool) scaleValue = randomizeScale();
+
+      currentProjectile = createProjectile(color0);
+
+      currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+
+      mouseDown = true;
+
     }
-    if (randomizeScaleBool) scaleValue = randomizeScale();
-
-    currentProjectile = createProjectile(color0);
-
-    currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
-
-    mouseDown = true;
 
   }
 
   canvas.onmouseup = function() {
 
-    if (mouseDown) {
+    if (mouseDown && siteMode == 'edit') {
       
       mouseDown = false;
 
@@ -1519,7 +1626,7 @@ function init() {
       }
 
       else if (
-      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && !skipToEnd) 
+      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && k < 1.2 && !skipToEnd) 
       || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
 
         fireworks[index].launchCompleted = true;
