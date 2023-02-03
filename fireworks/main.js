@@ -968,6 +968,10 @@ function init() {
     loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
     loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
 
+    if (!loopForever) searchParams.set('l', '0');
+    else searchParams.set('l', 1);
+    window.history.replaceState({}, "Fireworks!", url + searchParams);
+
   }
 
   /* Toggle UI */
@@ -1028,7 +1032,9 @@ function init() {
   }
   toggleUI();
 
-  /* Check for url fireworks */
+  /* Check url tokens */
+  var url = window.location.href;
+  const searchParams = new URLSearchParams();
   var urlToken = false;
 
   if (urlToken) toggleSiteMode();
