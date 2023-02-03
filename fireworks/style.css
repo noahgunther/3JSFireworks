@@ -66,7 +66,7 @@ body{
     transform: translate(0%, 0%) rotate(0deg);
   }
   100% {
-    transform: translate(0%, 225%) rotate(45deg);
+    transform: translate(0%, 250%) rotate(45deg);
   }
 }
 
@@ -90,7 +90,7 @@ body{
 
 @keyframes toggleUiButtonTopOut {
   0% {
-    transform: translate(0%, 225%) rotate(45deg);
+    transform: translate(0%, 250%) rotate(45deg);
   }
   100% {
     transform: translate(0%, 0%) rotate(0deg);
@@ -575,7 +575,7 @@ body{
   position: absolute;
   transform: translate(0%, -50%);
   top: 16%;
-  margin-left: 50%;
+  margin-left: 40%;
   cursor: pointer;
 }
 
