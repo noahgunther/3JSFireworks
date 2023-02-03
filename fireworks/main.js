@@ -183,7 +183,6 @@ function init() {
     
   }
 
-  var siteMode = 'edit';
   toggleSiteModeLink.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
   }
@@ -191,11 +190,11 @@ function init() {
     body.style.setProperty('cursor', 'default');
   }
   toggleSiteModeLink.onclick = function() {
-
     toggleSiteMode();
-
   }
 
+  var siteMode = 'edit';
+  var lastRecordingValue = false;
   function toggleSiteMode() {
 
     afterimagePass.uniforms['damp'].value = 0.0;
@@ -204,6 +203,8 @@ function init() {
     toggleSiteModeLink.innerHTML = siteMode == 'edit' ? 'PLAYBACK MODE' : 'EDIT MODE';
 
     if (siteMode == 'edit') {
+
+      recording = lastRecordingValue;
   
       timelinePlaying = false;
       playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
@@ -222,11 +223,13 @@ function init() {
       timeline.style.zIndex = recording ? '1' : '-1';
       outliner.style.zIndex = recording ? '1' : '-1';
 
-      requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = 1.0; });
+      requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = recording? 1.0 : 0.98; });
 
     }
 
     else {
+
+      lastRecordingValue = recording;
 
       recording = true;
 
@@ -1022,6 +1025,11 @@ function init() {
 
   }
   toggleUI();
+
+  /* Check for url fireworks */
+  var urlToken = false;
+
+  if (urlToken) toggleSiteMode();
 
   /* Firework class */
   class Firework {
