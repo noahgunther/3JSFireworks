@@ -236,11 +236,13 @@ function init() {
       timelinePosition = 0.0;
       timelinePlaying = true;
 
-      fireworks.forEach(firework => {
-        if (firework.recorded && firework.explodeTime == 0.0) {
-          firework.playLaunchOneShot = true;
-        }
-      });
+      if (typeof fireworks !== 'undefined') {
+        fireworks.forEach(firework => {
+          if (firework.recorded && firework.explodeTime == 0.0) {
+            firework.playLaunchOneShot = true;
+          }
+        });
+      }
 
       editorSettings.style.zIndex = '-1';
       nextFirework.style.zIndex = '-1';
