@@ -120,8 +120,12 @@ function init() {
     intersectionPoint = raycastIntersects[0].point;
   });
 
-  /* Miscellaneous UI */
+  /* Trash all button */
   const trashAllButton = document.getElementById("trash");
+  const warningOverlay = document.getElementById("warning");
+  const warningText = document.getElementById("warningtext");
+  const warningAcceptButton = document.getElementById("warningacceptbutton");
+  const warningCancelButton = document.getElementById("warningcancelbutton");
 
   trashAllButton.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
@@ -131,250 +135,282 @@ function init() {
   }
   trashAllButton.onclick = function() {
 
-    // Warn about deletion
+    warningOverlay.style.visibility = 'visible';
 
-    fireworks.forEach(firework => {
-      removeFirework(firework);
-    });
+    warningText.innerHTML = "WARNING: This will delete all fireworks in this show and start from scratch. Continue?";
 
-  }
-
-  /* Timeline */
-  var timelinePosition = -100000;
-  var timelineLength = 10000;
-  var recording = false;
-  var timelinePlaying = false;
-  var skipForward = false;
-  var skipBack = false;
-  var skipToEnd = false;
-  var skipToStart = false;
-  var lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-  var timelineReversing = false;
-  var loopForever = true;
-
-  // Timeline and related UI
-  const timeline = document.getElementById("timeline");
-  const outliner = document.getElementById("outliner");
-  const fireworkDataWrapper = document.getElementById("fireworkdatawrapper");
-  const timelineLine = document.getElementById("timelinelinewrapper");
-  const timelinePositionMarker = document.getElementById("timelineposition");
-  const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
-  const timelineLengthIncreaseButton = document.getElementById("timelinelengthincrease");
-  const timelineLengthDisplayValue = document.getElementById("timelinelengthvalue");
-  const playPauseButton = document.getElementById("playpausebutton");
-  const playButtonImg = document.getElementById("playbutton");
-  const pauseButtonImg = document.getElementById("pausebutton");
-  const skipForwardButton = document.getElementById("skipforwardbutton");
-  const skipBackButton = document.getElementById("skipbackbutton");
-  const skipToEndButton = document.getElementById("skiptoendbutton");
-  const skipToStartButton = document.getElementById("skiptostartbutton");
-  const reversePauseButton = document.getElementById("reversepausebutton");
-  const reverseButtonImg = document.getElementById("reversebutton");
-  const reversePauseButtonImg = document.getElementById("pausebuttonrev");
-  const loopButton = document.getElementById("loopbutton");
-  const loopOnceButtonImg = document.getElementById("looponcebutton");
-  const loopForeverButtonImg = document.getElementById("loopforeverbutton");
-
-  function updateTimelinePositionMarker() {
-
-    const currentTime = timelinePosition / timelineLength;
-    timelinePositionMarker.style.setProperty('left', currentTime * 100.0 + '%');
-
-  }
-  updateTimelinePositionMarker();
-  trashAllButton.style.zIndex = recording ? '1' : '-1';
-  timeline.style.zIndex = recording ? '1' : '-1';
-  outliner.style.zIndex = recording ? '1' : '-1';
-
-  timelineLine.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  timelineLine.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  var timelinePositionMarkerHeld = false;
-  timelineLine.onmousedown = function() {
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-    afterimagePass.uniforms['damp'].value = 0.0;
-    timelinePositionMarkerHeld = true;
-  }
-  window.onmouseup = function() {
-    if (timelinePositionMarkerHeld) { 
-      afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
-      timelinePositionMarkerHeld = false; 
+    warningAcceptButton.onmouseover = function() {
+      body.style.setProperty('cursor', 'pointer');
     }
+    warningAcceptButton.onmouseout = function() {
+      body.style.setProperty('cursor', 'default');
+    }
+    warningAcceptButton.onclick = function() {
+      fireworks.forEach(firework => {
+        removeFirework(firework);
+      });
+      warningOverlay.style.visibility = 'hidden';
+      body.style.setProperty('cursor', 'default');
+    }
+
+    warningCancelButton.onmouseover = function() {
+      body.style.setProperty('cursor', 'pointer');
+    }
+    warningCancelButton.onmouseout = function() {
+      body.style.setProperty('cursor', 'default');
+    }
+    warningCancelButton.onclick = function() {
+      warningOverlay.style.visibility = 'hidden';
+      body.style.setProperty('cursor', 'default');
+    }
+
   }
 
-  function updateTimelineLength() {
+  /* Main menu */
+  const mainMenu = document.getElementById("mainmenu");
 
-    let timelineDisplayMinutes = Math.floor(timelineLength * 0.001 / 60);
-    let timelineDisplaySeconds = timelineLength * 0.001 % 60;
-    if (timelineDisplaySeconds < 10) timelineDisplaySeconds = "0" + timelineDisplaySeconds;
-    timelineLengthDisplayValue.innerHTML = "0" + timelineDisplayMinutes + ":" + timelineDisplaySeconds;
+  /* Editor settings */
+  const editorSettings = document.getElementById("settings");
 
-    if (timelinePosition > timelineLength) timelinePosition = timelineLength;
+  // Recording
+  const recordToggle = document.getElementById("recordtoggle");
+  recordToggle.checked = recording;
 
-    fireworks.forEach(firework => {
-      if (firework.recorded) {
-        if (firework.explodeTime <= timelineLength) {
-          firework.marker.style.visibility = "visible";
-          firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
-        }
-        else {
-          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-          afterimagePass.uniforms['damp'].value = 0.0;
-          if (!timelinePlaying) updateFireworks();
-          firework.marker.style.visibility = "hidden";
-          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
-        }
-      }
-    });
+  recordToggle.addEventListener("change", function() {
+
+    recording = recordToggle.checked;
+    timelinePosition = recording ? 0 : -100000;
+
+    trashAllButton.style.zIndex = recording ? '1' : '-1';
+    timeline.style.zIndex = recording ? '1' : '-1';
+    outliner.style.zIndex = recording ? '1' : '-1';
 
     updateTimelinePositionMarker();
 
-    if (!timelinePlaying) updateOutlinerData();
+    // Dispose of any current geometry
+    fireworks.forEach(firework => {
 
-  }
+      if (firework.projectileMesh != null) {
+        scene.remove(firework.projectileMesh);
+        firework.projectileMesh.geometry.dispose();
+        firework.projectileMesh.material.dispose();
+      }
 
-  timelineLengthDecreaseButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  timelineLengthDecreaseButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  timelineLengthDecreaseButton.onclick = function() {
-    if (timelineLength > 10000) {
-      timelineLength -= 5000;
-      updateTimelineLength();
-    }
-  }
+      if (firework.pathMesh != null) {
+        scene.remove(firework.pathMesh);
+        firework.pathMesh.geometry.dispose();
+        firework.pathMesh.material.dispose();
+      }
 
-  timelineLengthIncreaseButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  timelineLengthIncreaseButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  timelineLengthIncreaseButton.onclick = function() {
-    if (timelineLength < 60000) {
-      timelineLength += 5000;
-      updateTimelineLength();
-    }
-  }
+      firework.explosionMeshes.forEach(explosionMesh => {
+        
+        if (explosionMesh != null) { 
+          scene.remove(explosionMesh);
+          explosionMesh.geometry.dispose();
+          explosionMesh.material.dispose();
+        }
 
-  playPauseButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  playPauseButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  playPauseButton.onclick = function() {
-    
-    timelineReversing = false;
-    reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
-    reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
+      });
 
-    timelinePlaying = !timelinePlaying;
+      firework.explosionPathMeshes.forEach(explosionPathMesh => {
+        
+        if (explosionPathMesh != null) { 
+          scene.remove(explosionPathMesh);
+          explosionPathMesh.geometry.dispose();
+          explosionPathMesh.material.dispose();
+        }
 
-    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
-    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+      });
+      
+    });
 
-    afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
+    updateFireworks();
 
-  }
+    updateOutlinerData();
 
-  skipForwardButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  skipForwardButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  skipForwardButton.onclick = function() {
-    
-    skipForward = true;
-
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-
-  }
-
-  skipBackButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  skipBackButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  skipBackButton.onclick = function() {
-    
-    skipBack = true;
-
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-
-  }
-
-  skipToEndButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  skipToEndButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  skipToEndButton.onclick = function() {
-    
-    skipToEnd = true;
-
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-
-  }
-
-  skipToStartButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  skipToStartButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  skipToStartButton.onclick = function() {
-    
-    skipToStart = true;
-
-    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-
-  }
-
-  reversePauseButton.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  reversePauseButton.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  reversePauseButton.onclick = function() {
-    
     timelinePlaying = false;
     playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
     pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
 
-    timelineReversing = !timelineReversing;
+    timelineReversing = false;
     reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
     reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
-    afterimagePass.uniforms['damp'].value = timelineReversing ? 0.0 : 1.0;
+    afterimagePass.uniforms['damp'].value = 0.0;
+
+    requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98; });
+
+  });
+
+  /* Next firework */
+  const nextFirework = document.getElementById("nextfirework");
+
+  // Random parameters toggles
+  const randomTypeToggle = document.getElementById("randomtypetoggle");
+  const randomColorToggle = document.getElementById("randomcolortoggle");
+  const randomScaleToggle = document.getElementById("randomscaletoggle");
+  var randomizeTypeBool = true;
+  var randomizeColorBool = true;
+  var randomizeScaleBool = true;
+  randomTypeToggle.checked = true;
+  randomColorToggle.checked = true;
+  randomScaleToggle.checked = true;
+
+  function randomizeExplosionType() {
+
+    const type = Math.floor(Math.random() * explosionTypeNames.length);
+
+    explosionTypePicker.value = explosionTypeNames[type];
+
+    return explosionTypeNames[type];
 
   }
 
-  loopButton.onmouseover = function() {
+  function randomizeColor() {
+
+    const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+
+    return color;
+
+  }
+
+  function randomizeScale() {
+
+    const scale = (Math.random() * (scaleValueMax - scaleValueMin)) + scaleValueMin;
+
+    scalePickerDisplayValue.innerHTML = scale.toFixed(2);
+
+    return scale;
+
+  }
+
+  randomTypeToggle.addEventListener("change", function() {
+    randomizeTypeBool = randomTypeToggle.checked;
+  });
+  randomColorToggle.addEventListener("change", function() {
+    randomizeColorBool = randomColorToggle.checked;
+  });
+  randomScaleToggle.addEventListener("change", function() {
+    randomizeScaleBool = randomScaleToggle.checked;
+  });
+
+  // Explosion type
+  var explosionTypeNames = [];
+  explosionTypeNames.push("burst", "drift", "pop", "flash", "zap", "flower", "flower2");
+
+  const explosionTypePicker = document.getElementById("explosiontype");
+  var explosionType = randomizeExplosionType();
+
+  explosionTypePicker.addEventListener("input", (event) => {
+    explosionType = explosionTypePicker.value;
+  });
+
+  // Colors
+  const colorPicker0 = document.getElementById("color0");
+  const colorPicker1 = document.getElementById("color1");
+  const colorPicker2 = document.getElementById("color2");
+  var color0 = randomizeColor();
+  var color1 = randomizeColor();
+  var color2 = randomizeColor();
+
+  function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  
+  function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  }
+
+  function updateColorPickers() {
+
+    colorPicker0.value = rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255));
+    colorPicker1.value = rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255));
+    colorPicker2.value = rgbToHex(Math.floor(color2.r * 255), Math.floor(color2.g * 255), Math.floor(color2.b * 255));
+
+  }
+
+  updateColorPickers();
+
+  function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: Number((parseInt(result[1], 16) / 255).toFixed(2)),
+      g: Number((parseInt(result[2], 16) / 255).toFixed(2)),
+      b: Number((parseInt(result[3], 16) / 255).toFixed(2))
+    } : null;
+  }
+
+  colorPicker0.addEventListener("input", (event) => {
+    color0 = hexToRgb(colorPicker0.value);
+    color0 = new THREE.Color(color0.r, color0.g, color0.b);
+  });
+
+  colorPicker1.addEventListener("input", (event) => {
+    color1 = hexToRgb(colorPicker1.value);
+    color1 = new THREE.Color(color1.r, color1.g, color1.b);
+  });
+
+  colorPicker2.addEventListener("input", (event) => {
+    color2 = hexToRgb(colorPicker2.value);
+    color2 = new THREE.Color(color2.r, color2.g, color2.b);
+  });
+
+  // Scale
+  const scalePickerDisplayValue = document.getElementById("scalevalue");
+  const scalePickerMinus = document.getElementById("scaleminus");
+  const scalePickerPlus = document.getElementById("scaleplus");
+  const scaleValueMin = 0.5;
+  const scaleValueMax = 3.0;
+  var scaleValue = randomizeScale();
+
+  scalePickerMinus.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
   }
-  loopButton.onmouseout = function() {
+  scalePickerMinus.onmouseout = function() {
     body.style.setProperty('cursor', 'default');
   }
-  loopButton.onclick = function() {
-
-    loopForever = !loopForever;
-    
-    loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
-    loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
-
+  scalePickerMinus.onclick = function() {
+    if (scaleValue > scaleValueMin) {
+      scaleValue -= 0.25;
+      if (scaleValue < scaleValueMin) scaleValue = scaleValueMin;
+      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
+    }
   }
 
+  scalePickerPlus.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  scalePickerPlus.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  scalePickerPlus.onclick = function() {
+    if (scaleValue < scaleValueMax) {
+      scaleValue += 0.25;
+      if (scaleValue > scaleValueMax) scaleValue = scaleValueMax;
+      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
+    }
+  }
+
+  // Audio
+  const launchAudioToggle = document.getElementById("launchaudiotoggle");
+  const explosionAudioToggle = document.getElementById("explosionaudiotoggle");
+  var launchAudioBool = true;
+  var explosionAudioBool = true;
+  launchAudioToggle.checked = true;
+  explosionAudioToggle.checked = true;
+
+  launchAudioToggle.addEventListener("change", function() {
+    launchAudioBool = launchAudioToggle.checked;
+  });
+  explosionAudioToggle.addEventListener("change", function() {
+    explosionAudioBool = explosionAudioToggle.checked;
+  });
+
   /* Outliner */
+  const outliner = document.getElementById("outliner");
+  const fireworkDataWrapper = document.getElementById("fireworkdatawrapper");
+
   function updateOutlinerData() {
 
     clearOutlinerData();
@@ -595,239 +631,294 @@ function init() {
 
   }
 
-  /* Modes and next firework parameters */
+  /* Timeline */
+  var timelinePosition = -100000;
+  var timelineLength = 10000;
+  var recording = false;
+  var timelinePlaying = false;
+  var skipForward = false;
+  var skipBack = false;
+  var skipToEnd = false;
+  var skipToStart = false;
+  var lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+  var timelineReversing = false;
+  var loopForever = true;
 
-  // Recording
-  const recordToggle = document.getElementById("recordtoggle");
-  recordToggle.checked = recording;
+  // Timeline and related UI
+  const timeline = document.getElementById("timeline");
+  const timelineLine = document.getElementById("timelinelinewrapper");
+  const timelinePositionMarker = document.getElementById("timelineposition");
+  const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
+  const timelineLengthIncreaseButton = document.getElementById("timelinelengthincrease");
+  const timelineLengthDisplayValue = document.getElementById("timelinelengthvalue");
+  const playPauseButton = document.getElementById("playpausebutton");
+  const playButtonImg = document.getElementById("playbutton");
+  const pauseButtonImg = document.getElementById("pausebutton");
+  const skipForwardButton = document.getElementById("skipforwardbutton");
+  const skipBackButton = document.getElementById("skipbackbutton");
+  const skipToEndButton = document.getElementById("skiptoendbutton");
+  const skipToStartButton = document.getElementById("skiptostartbutton");
+  const reversePauseButton = document.getElementById("reversepausebutton");
+  const reverseButtonImg = document.getElementById("reversebutton");
+  const reversePauseButtonImg = document.getElementById("pausebuttonrev");
+  const loopButton = document.getElementById("loopbutton");
+  const loopOnceButtonImg = document.getElementById("looponcebutton");
+  const loopForeverButtonImg = document.getElementById("loopforeverbutton");
 
-  recordToggle.addEventListener("change", function() {
+  function updateTimelinePositionMarker() {
 
-    recording = recordToggle.checked;
-    timelinePosition = recording ? 0 : -100000;
+    const currentTime = timelinePosition / timelineLength;
+    timelinePositionMarker.style.setProperty('left', currentTime * 100.0 + '%');
 
-    trashAllButton.style.zIndex = recording ? '1' : '-1';
-    timeline.style.zIndex = recording ? '1' : '-1';
-    outliner.style.zIndex = recording ? '1' : '-1';
+  }
+  updateTimelinePositionMarker();
+  trashAllButton.style.zIndex = recording ? '1' : '-1';
+  timeline.style.zIndex = recording ? '1' : '-1';
+  outliner.style.zIndex = recording ? '1' : '-1';
+
+  timelineLine.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLine.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  var timelinePositionMarkerHeld = false;
+  timelineLine.onmousedown = function() {
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+    afterimagePass.uniforms['damp'].value = 0.0;
+    timelinePositionMarkerHeld = true;
+  }
+  window.onmouseup = function() {
+    if (timelinePositionMarkerHeld) { 
+      afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
+      timelinePositionMarkerHeld = false; 
+    }
+  }
+
+  function updateTimelineLength() {
+
+    let timelineDisplayMinutes = Math.floor(timelineLength * 0.001 / 60);
+    let timelineDisplaySeconds = timelineLength * 0.001 % 60;
+    if (timelineDisplaySeconds < 10) timelineDisplaySeconds = "0" + timelineDisplaySeconds;
+    timelineLengthDisplayValue.innerHTML = "0" + timelineDisplayMinutes + ":" + timelineDisplaySeconds;
+
+    if (timelinePosition > timelineLength) timelinePosition = timelineLength;
+
+    fireworks.forEach(firework => {
+      if (firework.recorded) {
+        if (firework.explodeTime <= timelineLength) {
+          firework.marker.style.visibility = "visible";
+          firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
+        }
+        else {
+          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+          afterimagePass.uniforms['damp'].value = 0.0;
+          if (!timelinePlaying) updateFireworks();
+          firework.marker.style.visibility = "hidden";
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+        }
+      }
+    });
 
     updateTimelinePositionMarker();
 
-    // Dispose of any current geometry
-    fireworks.forEach(firework => {
+    if (!timelinePlaying) updateOutlinerData();
 
-      if (firework.projectileMesh != null) {
-        scene.remove(firework.projectileMesh);
-        firework.projectileMesh.geometry.dispose();
-        firework.projectileMesh.material.dispose();
-      }
+  }
 
-      if (firework.pathMesh != null) {
-        scene.remove(firework.pathMesh);
-        firework.pathMesh.geometry.dispose();
-        firework.pathMesh.material.dispose();
-      }
+  timelineLengthDecreaseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLengthDecreaseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  timelineLengthDecreaseButton.onclick = function() {
+    if (timelineLength > 10000) {
+      timelineLength -= 5000;
+      updateTimelineLength();
+    }
+  }
 
-      firework.explosionMeshes.forEach(explosionMesh => {
-        
-        if (explosionMesh != null) { 
-          scene.remove(explosionMesh);
-          explosionMesh.geometry.dispose();
-          explosionMesh.material.dispose();
-        }
+  timelineLengthIncreaseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  timelineLengthIncreaseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  timelineLengthIncreaseButton.onclick = function() {
+    if (timelineLength < 60000) {
+      timelineLength += 5000;
+      updateTimelineLength();
+    }
+  }
 
-      });
-
-      firework.explosionPathMeshes.forEach(explosionPathMesh => {
-        
-        if (explosionPathMesh != null) { 
-          scene.remove(explosionPathMesh);
-          explosionPathMesh.geometry.dispose();
-          explosionPathMesh.material.dispose();
-        }
-
-      });
-      
-    });
-
-    updateFireworks();
-
-    updateOutlinerData();
-
-    timelinePlaying = false;
-    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
-    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
-
+  playPauseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  playPauseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  playPauseButton.onclick = function() {
+    
     timelineReversing = false;
     reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
     reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
-    afterimagePass.uniforms['damp'].value = 0.0;
+    timelinePlaying = !timelinePlaying;
 
-    requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98; });
+    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
 
-  });
-
-  // Random parameters toggles
-  const randomTypeToggle = document.getElementById("randomtypetoggle");
-  const randomColorToggle = document.getElementById("randomcolortoggle");
-  const randomScaleToggle = document.getElementById("randomscaletoggle");
-  var randomizeTypeBool = true;
-  var randomizeColorBool = true;
-  var randomizeScaleBool = true;
-  randomTypeToggle.checked = true;
-  randomColorToggle.checked = true;
-  randomScaleToggle.checked = true;
-
-  function randomizeExplosionType() {
-
-    const type = Math.floor(Math.random() * explosionTypeNames.length);
-
-    explosionTypePicker.value = explosionTypeNames[type];
-
-    return explosionTypeNames[type];
+    afterimagePass.uniforms['damp'].value = timelinePlaying ? 0.98 : 1.0;
 
   }
 
-  function randomizeColor() {
+  skipForwardButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipForwardButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipForwardButton.onclick = function() {
+    
+    skipForward = true;
 
-    const color = new THREE.Color(Math.random(), Math.random(), Math.random());
-
-    return color;
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
 
   }
 
-  function randomizeScale() {
+  skipBackButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipBackButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipBackButton.onclick = function() {
+    
+    skipBack = true;
 
-    const scale = (Math.random() * (scaleValueMax - scaleValueMin)) + scaleValueMin;
-
-    scalePickerDisplayValue.innerHTML = scale.toFixed(2);
-
-    return scale;
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
 
   }
 
-  randomTypeToggle.addEventListener("change", function() {
-    randomizeTypeBool = randomTypeToggle.checked;
-  });
-  randomColorToggle.addEventListener("change", function() {
-    randomizeColorBool = randomColorToggle.checked;
-  });
-  randomScaleToggle.addEventListener("change", function() {
-    randomizeScaleBool = randomScaleToggle.checked;
-  });
-
-  // Explosion type
-  var explosionTypeNames = [];
-  explosionTypeNames.push("burst", "drift", "pop", "flash", "zap", "flower", "flower2");
-
-  const explosionTypePicker = document.getElementById("explosiontype");
-  var explosionType = randomizeExplosionType();
-
-  explosionTypePicker.addEventListener("input", (event) => {
-    explosionType = explosionTypePicker.value;
-  });
-
-  // Colors
-  const colorPicker0 = document.getElementById("color0");
-  const colorPicker1 = document.getElementById("color1");
-  const colorPicker2 = document.getElementById("color2");
-  var color0 = randomizeColor();
-  var color1 = randomizeColor();
-  var color2 = randomizeColor();
-
-  function componentToHex(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
+  skipToEndButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
   }
+  skipToEndButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipToEndButton.onclick = function() {
+    
+    skipToEnd = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
+  skipToStartButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  skipToStartButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  skipToStartButton.onclick = function() {
+    
+    skipToStart = true;
+
+    lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+
+  }
+
+  reversePauseButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  reversePauseButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  reversePauseButton.onclick = function() {
+    
+    timelinePlaying = false;
+    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
+    timelineReversing = !timelineReversing;
+    reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
+    reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
+
+    afterimagePass.uniforms['damp'].value = timelineReversing ? 0.0 : 1.0;
+
+  }
+
+  loopButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  loopButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  loopButton.onclick = function() {
+
+    loopForever = !loopForever;
+    
+    loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
+    loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
+
+  }
+
+  /* Toggle UI */
+  const toggleUiButton = document.getElementById("toggleuibutton");
+  const toggleUiButtonTop = document.getElementById("toggleuibuttontop");
+  const toggleUiButtonMiddle = document.getElementById("toggleuibuttonmiddle");
+  const toggleUiButtonBottom = document.getElementById("toggleuibuttonbottom");
+
+  var uiHidden = false;
+  toggleUiButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  toggleUiButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  toggleUiButton.onclick = toggleUI;
   
-  function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-  }
+  function toggleUI() {
 
-  function updateColorPickers() {
+    if (uiHidden) {
 
-    colorPicker0.value = rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255));
-    colorPicker1.value = rgbToHex(Math.floor(color1.r * 255), Math.floor(color1.g * 255), Math.floor(color1.b * 255));
-    colorPicker2.value = rgbToHex(Math.floor(color2.r * 255), Math.floor(color2.g * 255), Math.floor(color2.b * 255));
+      toggleUiButtonTop.style.animation = 'toggleUiButtonTopOut 0.2s forwards';
+      toggleUiButtonMiddle.style.animation = 'toggleUiButtonMiddleOut 0.2s forwards';
+      toggleUiButtonBottom.style.animation = 'toggleUiButtonBottomOut 0.2s forwards';
 
-  }
+      mainMenu.style.visibility = 'hidden';
+      editorSettings.style.visibility = 'hidden';
+      nextFirework.style.visibility = 'hidden';
 
-  updateColorPickers();
+      trashAllButton.style.zIndex = '-1';
+      timeline.style.zIndex = '-1';
+      outliner.style.zIndex = '-1';
 
-  function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: Number((parseInt(result[1], 16) / 255).toFixed(2)),
-      g: Number((parseInt(result[2], 16) / 255).toFixed(2)),
-      b: Number((parseInt(result[3], 16) / 255).toFixed(2))
-    } : null;
-  }
+      uiHidden = false;
 
-  colorPicker0.addEventListener("input", (event) => {
-    color0 = hexToRgb(colorPicker0.value);
-    color0 = new THREE.Color(color0.r, color0.g, color0.b);
-  });
-
-  colorPicker1.addEventListener("input", (event) => {
-    color1 = hexToRgb(colorPicker1.value);
-    color1 = new THREE.Color(color1.r, color1.g, color1.b);
-  });
-
-  colorPicker2.addEventListener("input", (event) => {
-    color2 = hexToRgb(colorPicker2.value);
-    color2 = new THREE.Color(color2.r, color2.g, color2.b);
-  });
-
-  // Scale
-  const scalePickerDisplayValue = document.getElementById("scalevalue");
-  const scalePickerMinus = document.getElementById("scaleminus");
-  const scalePickerPlus = document.getElementById("scaleplus");
-  const scaleValueMin = 0.5;
-  const scaleValueMax = 3.0;
-  var scaleValue = randomizeScale();
-
-  scalePickerMinus.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  scalePickerMinus.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  scalePickerMinus.onclick = function() {
-    if (scaleValue > scaleValueMin) {
-      scaleValue -= 0.25;
-      if (scaleValue < scaleValueMin) scaleValue = scaleValueMin;
-      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
     }
-  }
 
-  scalePickerPlus.onmouseover = function() {
-    body.style.setProperty('cursor', 'pointer');
-  }
-  scalePickerPlus.onmouseout = function() {
-    body.style.setProperty('cursor', 'default');
-  }
-  scalePickerPlus.onclick = function() {
-    if (scaleValue < scaleValueMax) {
-      scaleValue += 0.25;
-      if (scaleValue > scaleValueMax) scaleValue = scaleValueMax;
-      scalePickerDisplayValue.innerHTML = scaleValue.toFixed(2);
+    else {
+
+      toggleUiButtonTop.style.animation = 'toggleUiButtonTopIn 0.2s forwards';
+      toggleUiButtonMiddle.style.animation = 'toggleUiButtonMiddleIn 0.2s forwards';
+      toggleUiButtonBottom.style.animation = 'toggleUiButtonBottomIn 0.2s forwards';
+
+      mainMenu.style.visibility = 'visible';
+      editorSettings.style.visibility = 'visible';
+      nextFirework.style.visibility = 'visible';
+
+      trashAllButton.style.zIndex = recording ? '1' : '-1';
+      timeline.style.zIndex = recording ? '1' : '-1';
+      outliner.style.zIndex = recording ? '1' : '-1';
+
+      uiHidden = true;
+
     }
+
   }
-
-  // Audio
-  const launchAudioToggle = document.getElementById("launchaudiotoggle");
-  const explosionAudioToggle = document.getElementById("explosionaudiotoggle");
-  var launchAudioBool = true;
-  var explosionAudioBool = true;
-  launchAudioToggle.checked = true;
-  explosionAudioToggle.checked = true;
-
-  launchAudioToggle.addEventListener("change", function() {
-    launchAudioBool = launchAudioToggle.checked;
-  });
-  explosionAudioToggle.addEventListener("change", function() {
-    explosionAudioBool = explosionAudioToggle.checked;
-  });
+  toggleUI();
 
   /* Firework class */
   class Firework {
@@ -1329,7 +1420,7 @@ function init() {
     firework.recorded = false;
 
     firework.explodeTime = -9999;
-    firework.marker.style.visibility = 'hidden';
+    if (firework.marker != null) firework.marker.style.visibility = 'hidden';
 
     updateOutlinerData();
 

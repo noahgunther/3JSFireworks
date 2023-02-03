@@ -25,15 +25,180 @@ body{
 
 /* Miscellaneous UI */
 
+#toggleuibutton {
+  position: absolute;
+  top: 1%;
+  left: 1%;
+  width: 3%;
+  padding-bottom: 3%;
+}
+
+#toggleuibuttontop {
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 25.6%;
+  bottom: 66.07%;
+  background: #FFFFFF;
+}
+
+#toggleuibuttonmiddle {
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 45.83%;
+  bottom: 45.83%;
+  background: #FFFFFF;
+}
+
+#toggleuibuttonbottom {
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 66.07%;
+  bottom: 25.6%;
+  background: #FFFFFF;
+  opacity: 100%;
+}
+
+@keyframes toggleUiButtonTopIn {
+  0% {
+    transform: translate(0%, 0%) rotate(0deg);
+  }
+  100% {
+    transform: translate(0%, 225%) rotate(45deg);
+  }
+}
+
+@keyframes toggleUiButtonMiddleIn {
+  0% {
+    transform: translate(0%, 0%) rotate(0deg);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(-45deg);
+  }
+}
+
+@keyframes toggleUiButtonBottomIn {
+  0% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
+}
+
+@keyframes toggleUiButtonTopOut {
+  0% {
+    transform: translate(0%, 225%) rotate(45deg);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(0deg);
+  }
+}
+
+@keyframes toggleUiButtonMiddleOut {
+  0% {
+    transform: translate(0%, 0%) rotate(-45deg);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(0deg);
+  }
+}
+
+@keyframes toggleUiButtonBottomOut {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+
 #trash {
   position: absolute;
   top: 1%;
   right: 1%;
   width: 3%;
+  user-select: none;
 }
 
 #trash img {
   width: 100%;
+}
+
+#warning {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 3;
+}
+
+#warningbackground {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgb(0, 0, 0, 0.85);
+}
+
+#warningalert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(20%, 300px);
+  height: 20%;
+  background-color: white;
+  border-radius: 2em;
+}
+
+#warningtext {
+  position: absolute;
+  top: 12%;
+  left: 10%;
+  width: 80%;
+  height: 60%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: left;
+  font-size: min(2vw, 2vh);
+  color: rgb(128, 128, 128);
+}
+
+#warningacceptbutton {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  bottom: 0%;
+  left: 30%;
+  width: 30%;
+  height: 25%;
+  border-radius: 1em;
+  background-color: rgb(0, 90, 255);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  line-height: 250%;
+  font-size: min(2vw, 2vh);
+  color: white;
+}
+
+#warningcancelbutton {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  bottom: 0%;
+  left: 70%;
+  width: 30%;
+  height: 25%;
+  border-radius: 1em;
+  background-color: rgb(126, 126, 126);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  line-height: 250%;
+  font-size: min(2vw, 2vh);
+  color: white;
 }
 
 /* Main menu and contents */
@@ -61,6 +226,7 @@ body{
   position: absolute;
   top: 0%;
   margin: auto;
+  line-height: 250%;
   width: 100%;
   height: 25%;
   border-bottom: .3vh dashed rgb(128, 128, 128);
@@ -70,6 +236,7 @@ body{
   position: absolute;
   top: 25%;
   margin: auto;
+  line-height: 250%;
   width: 100%;
   height: 25%;
   vertical-align: middle;
@@ -80,6 +247,7 @@ body{
   position: absolute;
   top: 50%;
   margin: auto;
+  line-height: 250%;
   width: 100%;
   height: 25%;
   border-bottom: .3vh dashed rgb(128, 128, 128);
@@ -89,6 +257,7 @@ body{
   position: absolute;
   top: 75%;
   margin: auto;
+  line-height: 250%;
   width: 100%;
   height: 25%;
 }
