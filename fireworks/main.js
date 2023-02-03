@@ -24,6 +24,9 @@ import explosionCrackleAudioUrl from "./audio/explosionCrackle.mp3?url";
 var explosionAudios = [];
 explosionAudios.push(explosion0AudioUrl, explosion1AudioUrl, explosion2AudioUrl);
 
+/* Graphics */
+import trashIconDarkUrl from './graphics/trashdark.png';
+
 /* Start threejs scene when window loaded */
 window.addEventListener("load", init, false);
 
@@ -31,6 +34,8 @@ window.addEventListener("load", init, false);
 function init() {
 
   /* Initialize main scene */
+  const body = document.getElementById('body');
+
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -54,6 +59,8 @@ function init() {
 
   const size = renderer.getDrawingBufferSize( new THREE.Vector2() );
   const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, { samples: 3 });
+
+  scene.background = new THREE.Color(0x000005);
 
   /* Post Processing */
   const composer = new EffectComposer(renderer, renderTarget);
@@ -113,8 +120,24 @@ function init() {
     intersectionPoint = raycastIntersects[0].point;
   });
 
-  /* Scene background */
-  scene.background = new THREE.Color(0x000005);
+  /* Miscellaneous UI */
+  const trashAllButton = document.getElementById("trash");
+
+  trashAllButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  trashAllButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  trashAllButton.onclick = function() {
+
+    // Warn about deletion
+
+    fireworks.forEach(firework => {
+      removeFirework(firework);
+    });
+
+  }
 
   /* Timeline */
   var timelinePosition = -100000;
@@ -129,7 +152,7 @@ function init() {
   var timelineReversing = false;
   var loopForever = true;
 
-  // Timeline and outliner UI
+  // Timeline and related UI
   const timeline = document.getElementById("timeline");
   const outliner = document.getElementById("outliner");
   const fireworkDataWrapper = document.getElementById("fireworkdatawrapper");
@@ -159,6 +182,7 @@ function init() {
 
   }
   updateTimelinePositionMarker();
+  trashAllButton.style.zIndex = recording ? '1' : '-1';
   timeline.style.zIndex = recording ? '1' : '-1';
   outliner.style.zIndex = recording ? '1' : '-1';
 
@@ -197,12 +221,18 @@ function init() {
           firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
         }
         else {
+          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+          afterimagePass.uniforms['damp'].value = 0.0;
+          if (!timelinePlaying) updateFireworks();
           firework.marker.style.visibility = "hidden";
+          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
         }
       }
     });
 
     updateTimelinePositionMarker();
+
+    if (!timelinePlaying) updateOutlinerData();
 
   }
 
@@ -322,7 +352,6 @@ function init() {
     pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
 
     timelineReversing = !timelineReversing;
-
     reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
     reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
@@ -345,8 +374,7 @@ function init() {
 
   }
 
-  /* Outliner firework data */
-
+  /* Outliner */
   function updateOutlinerData() {
 
     clearOutlinerData();
@@ -471,6 +499,88 @@ function init() {
 
         });
 
+        // Firework scale
+        const fireworkDataScaleLabel = document.createElement('fireworkdatascalelabel');
+        fireworkDataScaleLabel.className = 'fireworkdatascalelabel';
+        fireworkDataScaleLabel.innerHTML = "Scale: ";
+        fireworkData.appendChild(fireworkDataScaleLabel);
+
+        const fireworkDataScaleMinus = document.createElement('fireworkdatascaleminus');
+        fireworkDataScaleMinus.className = 'fireworkdatascale';
+        fireworkDataScaleMinus.id = 'fireworkdatascaleminus';
+        fireworkDataScaleMinus.innerHTML = '-';
+        fireworkData.appendChild(fireworkDataScaleMinus);
+
+        const fireworkDataScaleValue = document.createElement('fireworkdatascalevalue');
+        fireworkDataScaleValue.className = 'fireworkdatascale';
+        fireworkDataScaleValue.id = 'fireworkdatascalevalue';
+        fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+        fireworkData.appendChild(fireworkDataScaleValue);
+
+        const fireworkDataScalePlus = document.createElement('fireworkdatascaleplus');
+        fireworkDataScalePlus.className = 'fireworkdatascale';
+        fireworkDataScalePlus.id = 'fireworkdatascaleplus';
+        fireworkDataScalePlus.innerHTML = '+';
+        fireworkData.appendChild(fireworkDataScalePlus);
+
+        fireworkDataScaleMinus.onmouseover = function() {
+          body.style.setProperty('cursor', 'pointer');
+        }
+        fireworkDataScaleMinus.onmouseout = function() {
+          body.style.setProperty('cursor', 'default');
+        }
+        fireworkDataScaleMinus.onclick = function() {
+          if (firework.explosionScale > scaleValueMin) {
+            firework.explosionScale -= 0.25;
+            if (firework.explosionScale < scaleValueMin) firework.explosionScale = scaleValueMin;
+            fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+            updateFireworkParameters(firework);
+          }
+        }
+
+        fireworkDataScalePlus.onmouseover = function() {
+          body.style.setProperty('cursor', 'pointer');
+        }
+        fireworkDataScalePlus.onmouseout = function() {
+          body.style.setProperty('cursor', 'default');
+        }
+        fireworkDataScalePlus.onclick = function() {
+          if (firework.explosionScale < scaleValueMax) {
+            firework.explosionScale += 0.25;
+            if (firework.explosionScale > scaleValueMax) firework.explosionScale = scaleValueMax;
+            fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+            updateFireworkParameters(firework);
+          }
+        }
+
+        // Firework position
+        const fireworkDataPositionLabel = document.createElement('fireworkdatapositionlabel');
+        fireworkDataPositionLabel.className = 'fireworkdatapositionlabel';
+        fireworkDataPositionLabel.innerHTML = "Position: ";
+        fireworkData.appendChild(fireworkDataPositionLabel);
+
+        const fireworkDataPosition = document.createElement('fireworkdataposition');
+        fireworkDataPosition.className = 'fireworkdataposition';
+        fireworkDataPosition.innerHTML = "X: " + firework.position.x + ", Y: " + firework.position.y;
+        fireworkData.appendChild(fireworkDataPosition);
+
+        // Remove firework
+        const removeFireworkButton = document.createElement('removefireworkbutton');
+        removeFireworkButton.className = 'removefireworkbutton';
+        removeFireworkButton.innerHTML = '<img src="' + trashIconDarkUrl + '">';
+        fireworkData.appendChild(removeFireworkButton);
+        
+        removeFireworkButton.onmouseover = function() {
+          body.style.setProperty('cursor', 'pointer');
+        }
+        removeFireworkButton.onmouseout = function() {
+          body.style.setProperty('cursor', 'default');
+        }
+        removeFireworkButton.onclick = function() {
+          removeFirework(firework);
+        }
+
+        // Append firework data to parent
         fireworkDataWrapper.appendChild(fireworkData);
 
       }
@@ -485,8 +595,7 @@ function init() {
 
   }
 
-  /* Modes and parameters */
-  const body = document.getElementById('body');
+  /* Modes and next firework parameters */
 
   // Recording
   const recordToggle = document.getElementById("recordtoggle");
@@ -497,8 +606,10 @@ function init() {
     recording = recordToggle.checked;
     timelinePosition = recording ? 0 : -100000;
 
+    trashAllButton.style.zIndex = recording ? '1' : '-1';
     timeline.style.zIndex = recording ? '1' : '-1';
     outliner.style.zIndex = recording ? '1' : '-1';
+
     updateTimelinePositionMarker();
 
     // Dispose of any current geometry
@@ -543,7 +654,12 @@ function init() {
     updateOutlinerData();
 
     timelinePlaying = false;
+    playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
+    pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
+
     timelineReversing = false;
+    reverseButtonImg.style.visibility = !timelineReversing ? 'visible' : 'hidden';
+    reversePauseButtonImg.style.visibility = timelineReversing ? 'visible' : 'hidden';
 
     afterimagePass.uniforms['damp'].value = 0.0;
 
@@ -713,18 +829,6 @@ function init() {
     explosionAudioBool = explosionAudioToggle.checked;
   });
 
-  // Position values (read-only)
-  const positionDisplayValues = document.getElementById("positionvalues");
-
-  function updatePositionDisplayValues(x, y) {
-
-    x = (Math.round((x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
-    y = (Math.round((y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
-
-    positionDisplayValues.innerHTML = "X: " + x + "% Y: " + y + "%";
-
-  }
-
   /* Firework class */
   class Firework {
     constructor(
@@ -796,7 +900,7 @@ function init() {
     }
   }
 
-  /* 3D object creation functions */
+  /* 3D geometry creation functions */
   function createProjectile(color) {
 
     const projectileGeometry = new THREE.SphereGeometry(0.005, 3, 3);
@@ -913,7 +1017,7 @@ function init() {
 
   }
 
-  /* Firework creation */
+  /* Firework creation and modification */
   var mouseDown = false;
   var currentProjectile;
   var fireworks = [];
@@ -942,8 +1046,6 @@ function init() {
     if (mouseDown) {
       
       mouseDown = false;
-
-      updatePositionDisplayValues(mousePagePosition.x, mousePagePosition.y);
 
       const terminalPointX = (Math.round((mousePagePosition.x / 2 + 0.5) * 1000) * 0.1).toFixed(1);
       const terminalPointY = (Math.round((mousePagePosition.y / 2 + 0.5) * 1000) * 0.1).toFixed(1);
@@ -1184,7 +1286,72 @@ function init() {
 
   }
 
-  /* Launch setup and animation */
+  function removeFirework(firework) {
+
+    // Reset afterimage pass
+    const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+    afterimagePass.uniforms['damp'].value = 0.0;
+
+    // Dispose of any current geometry
+    if (firework.projectileMesh != null) {
+      scene.remove(firework.projectileMesh);
+      firework.projectileMesh.geometry.dispose();
+      firework.projectileMesh.material.dispose();
+    }
+
+    if (firework.pathMesh != null) {
+      scene.remove(firework.pathMesh);
+      firework.pathMesh.geometry.dispose();
+      firework.pathMesh.material.dispose();
+    }
+
+    firework.explosionMeshes.forEach(explosionMesh => {
+      
+      if (explosionMesh != null) { 
+        scene.remove(explosionMesh);
+        explosionMesh.geometry.dispose();
+        explosionMesh.material.dispose();
+      }
+
+    });
+
+    firework.explosionPathMeshes.forEach(explosionPathMesh => {
+      
+      if (explosionPathMesh != null) { 
+        scene.remove(explosionPathMesh);
+        explosionPathMesh.geometry.dispose();
+        explosionPathMesh.material.dispose();
+      }
+
+    });
+
+    firework.active = false;
+    firework.recorded = false;
+
+    firework.explodeTime = -9999;
+    firework.marker.style.visibility = 'hidden';
+
+    updateOutlinerData();
+
+    requestAnimationFrame(function() { 
+      
+      afterimagePass.uniforms['damp'].value = lastAfterImageDampValue;
+
+      firework = null;
+
+      fireworks.forEach(firework => {
+        if (firework.explodeTime == timelinePosition) {
+          firework.playLaunchOneShot = true;
+        }
+      });
+
+      updateFireworks();
+    
+    });
+
+  }
+
+  /* Firework position and animation */
   function setLaunchPosition() {
 
     const originPointPageX = 0.0;

@@ -23,6 +23,19 @@ body{
   color: white;
 }
 
+/* Miscellaneous UI */
+
+#trash {
+  position: absolute;
+  top: 1%;
+  right: 1%;
+  width: 3%;
+}
+
+#trash img {
+  width: 100%;
+}
+
 /* Main menu and contents */
 
 #mainmenu {
@@ -366,7 +379,7 @@ body{
 #fireworkdatawrapper {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: calc(100% - max(3.5vh, 30px));
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -414,10 +427,62 @@ body{
   cursor: pointer;
 }
 
-#positionvalues {
+.fireworkdatascalelabel {
   position: absolute;
-  top: 100%;
+  transform: translate(0%, -50%);
+  top: 66%;
   left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+.fireworkdatascale {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 66%;
+  font-size: max(0.75vw, 70%);
+  font-weight: bold;
+}
+
+#fireworkdatascaleminus {
+  left: 50%;
+}
+
+#fireworkdatascalevalue {
+  left: 63%;
+}
+
+#fireworkdatascaleplus {
+  left: 76%;
+}
+
+.fireworkdatapositionlabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 90%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+.fireworkdataposition {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 90%;
+  left: 50%;
+  font-size: max(0.75vw, 70%);
+}
+
+.removefireworkbutton {
+  position: absolute;
+  top: 16%;
+  right: 3%;
+  width: 10%;
+}
+
+.removefireworkbutton img {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 0;
+  width: 100%;
 }
 
 /* Timeline and contents */
