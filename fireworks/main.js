@@ -71,7 +71,6 @@ function init() {
     const starMesh = new THREE.Mesh(starGeometry, starMaterial);
     stars.push(starMesh);
     starMesh.position.set(Math.random() * 26.0 - 13.0, Math.random() * 20.0 - 10.0, (Math.random() * 2.0 - 1.0) - 40);
-    scene.add(starMesh);
   }
 
   /* Post Processing */
@@ -294,6 +293,8 @@ function init() {
 
   // Recording
   const recordToggle = document.getElementById("recordtoggle");
+  const nightSkyToggle = document.getElementById("nightskytoggle");
+
   recordToggle.checked = recording;
 
   recordToggle.addEventListener("change", function() {
@@ -361,6 +362,52 @@ function init() {
     requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = recording ? 1.0 : 0.98; });
 
   });
+
+  var nightSkyBool = true;
+  nightSkyToggle.checked = nightSkyBool;
+
+  nightSkyToggle.addEventListener("change", function() {
+
+    nightSkyBool = nightSkyToggle.checked;
+
+    toggleNightSky();
+
+  });
+
+  function toggleNightSky() {
+
+    // Reset afterimage pass
+    const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+    afterimagePass.uniforms['damp'].value = 0.0;
+
+    // Toggle stars
+    if (nightSkyBool) {
+
+      stars.forEach(star => {
+        
+        scene.add(star);
+
+      });
+
+    }
+
+    else {
+
+      stars.forEach(star => {
+        
+        scene.remove(star);
+
+      });
+
+    }
+
+    if (!nightSkyBool) searchParams.set('s', '0');
+    else searchParams.set('s', '1');
+    updateUrlHistory();
+
+    requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+  }
 
   /* Next firework */
   const nextFirework = document.getElementById("nextfirework");
@@ -985,7 +1032,8 @@ function init() {
 
     if (!loopForever) searchParams.set('l', '0');
     else searchParams.set('l', '1');
-    window.history.replaceState({}, "Fireworks!", urlOrigin + searchParams);
+    
+    updateUrlHistory();
 
   }
 
@@ -1059,8 +1107,20 @@ function init() {
   loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
   loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
 
-  window.history.replaceState({}, "Fireworks!", urlOrigin + "/?" + searchParams);
+  // Night sky param
+  const nightSkyParam = searchParams.get('s');
+  if (nightSkyParam != null) nightSkyBool = nightSkyParam == '0' ? false : true;
+  else searchParams.set('s', '1');
+  toggleNightSky();
+  nightSkyToggle.checked = nightSkyBool;
 
+  // Update url with params
+  function updateUrlHistory() {
+    window.history.replaceState({}, "Fireworks!", urlOrigin + "/?" + searchParams);
+  }
+  updateUrlHistory();
+
+  // Set site mode based on presence of firework tokens in url
   var urlToken = false;
 
   if (urlToken) toggleSiteMode();
