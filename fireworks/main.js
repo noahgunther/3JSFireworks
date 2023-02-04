@@ -149,7 +149,7 @@ function init() {
       fireworks.forEach(firework => {
         removeFirework(firework);
       });
-      timelineLine.innerHTML = '';
+      timelineMarkersWrapper.innerHTML = '';
       warningOverlay.style.visibility = 'hidden';
       body.style.setProperty('cursor', 'default');
     }
@@ -754,6 +754,7 @@ function init() {
   // Timeline and related UI
   const timeline = document.getElementById("timeline");
   const timelineLine = document.getElementById("timelinelinewrapper");
+  const timelineMarkersWrapper = document.getElementById("timelinemarkerswrapper");
   const timelinePositionMarker = document.getElementById("timelineposition");
   const timelineLengthDecreaseButton = document.getElementById("timelinelengthdecrease");
   const timelineLengthIncreaseButton = document.getElementById("timelinelengthincrease");
@@ -1399,7 +1400,7 @@ function init() {
       marker.style.setProperty('left', (timelinePosition / timelineLength) * 100.0 + '%');
       marker.style.setProperty('background-color', rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255)));
       
-      timelineLine.appendChild(marker);
+      timelineMarkersWrapper.appendChild(marker);
 
     }
 

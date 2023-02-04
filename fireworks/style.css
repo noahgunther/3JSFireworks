@@ -781,6 +781,14 @@ body{
   user-select: none;
 }
 
+#timelinemarkerswrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .timelinemarker {
   position: absolute;
   transform: translate(-50%, -50%);
