@@ -149,6 +149,7 @@ function init() {
       fireworks.forEach(firework => {
         removeFirework(firework);
       });
+      timelineLine.innerHTML = '';
       warningOverlay.style.visibility = 'hidden';
       body.style.setProperty('cursor', 'default');
     }
