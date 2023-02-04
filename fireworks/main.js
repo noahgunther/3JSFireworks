@@ -969,8 +969,8 @@ function init() {
     loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
 
     if (!loopForever) searchParams.set('l', '0');
-    else searchParams.set('l', 1);
-    window.history.replaceState({}, "Fireworks!", url + searchParams);
+    else searchParams.set('l', '1');
+    window.history.replaceState({}, "Fireworks!", urlOrigin + searchParams);
 
   }
 
@@ -1033,8 +1033,19 @@ function init() {
   toggleUI();
 
   /* Check url tokens */
-  var url = window.location.href;
-  const searchParams = new URLSearchParams();
+  const url = new URL(window.location);
+  const urlOrigin = url.origin;
+  const searchParams = url.searchParams;
+
+  // Loop once or forever param
+  const loopParam = searchParams.get('l');
+  if (loopParam != null) loopForever = loopParam == '0' ? false : true;
+  else searchParams.set('l', '1');
+  loopOnceButtonImg.style.visibility = !loopForever ? 'visible' : 'hidden';
+  loopForeverButtonImg.style.visibility = loopForever ? 'visible' : 'hidden';
+
+  window.history.replaceState({}, "Fireworks!", urlOrigin + "/?" + searchParams);
+
   var urlToken = false;
 
   if (urlToken) toggleSiteMode();
