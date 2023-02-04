@@ -62,6 +62,18 @@ function init() {
 
   scene.background = new THREE.Color(0x000005);
 
+  // Night sky
+  const starCount = 300;
+  var stars = [];
+  const starMaterial = new THREE.MeshBasicMaterial({ color : new THREE.Color(1.0, 0.7, 0.5) });
+  for (let i = 0; i < starCount; i++) {
+    const starGeometry = new THREE.SphereGeometry(0.02 * Math.random(), 3.0, 3.0);
+    const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+    stars.push(starMesh);
+    starMesh.position.set(Math.random() * 26.0 - 13.0, Math.random() * 20.0 - 10.0, (Math.random() * 2.0 - 1.0) - 40);
+    scene.add(starMesh);
+  }
+
   /* Post Processing */
   const composer = new EffectComposer(renderer, renderTarget);
 
@@ -150,6 +162,7 @@ function init() {
         removeFirework(firework);
       });
       timelineMarkersWrapper.innerHTML = '';
+      fireworks = [];
       warningOverlay.style.visibility = 'hidden';
       body.style.setProperty('cursor', 'default');
     }
