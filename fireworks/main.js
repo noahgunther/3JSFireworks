@@ -182,6 +182,7 @@ function init() {
   /* Main menu */
   const mainMenu = document.getElementById("mainmenu");
   const shareShowLink = document.getElementById("sharelink");
+  const copiedToClipboardAlert = document.getElementById("copiedtoclipboard");
   const toggleSiteModeLink = document.getElementById("togglemodelink");
   const documentationLink = document.getElementById("documentationlink");
   const aboutLink = document.getElementById("aboutlink");
@@ -192,8 +193,17 @@ function init() {
   shareShowLink.onmouseout = function() {
     body.style.setProperty('cursor', 'default');
   }
+  var copiedAlertVisible = false;
   shareShowLink.onclick = function() {
-    
+    navigator.clipboard.writeText(window.location.href);
+    if (!copiedAlertVisible) {
+      copiedToClipboardAlert.style.visibility = 'visible';
+      copiedAlertVisible = true;
+      setTimeout(function() { 
+        copiedToClipboardAlert.style.visibility = 'hidden';
+        requestAnimationFrame(function() { copiedAlertVisible = false; });
+      }, 3000);
+    }
   }
 
   toggleSiteModeLink.onmouseover = function() {
@@ -582,213 +592,217 @@ function init() {
 
     clearOutlinerData();
 
-    fireworks.forEach(firework => {
-      
-      if (firework.recorded && firework.explodeTime == timelinePosition) {
+    if (typeof fireworks !== 'undefined' && fireworks != null) {
 
-        const fireworkData = document.createElement('fireworkdata');
-        fireworkData.id = firework.id;
-        fireworkData.className = 'fireworkdata';
+      fireworks.forEach(firework => {
         
-        // Firework explosion type
-        const fireworkDataTypeLabel = document.createElement('fireworkdatatypelabel');
-        fireworkDataTypeLabel.className = 'fireworkdatatypelabel';
-        fireworkDataTypeLabel.innerHTML = "Type: ";
-        fireworkData.appendChild(fireworkDataTypeLabel);
+        if (firework.recorded && firework.explodeTime == timelinePosition) {
 
-        const fireworkDataTypeInput = document.createElement('fireworkdatatypeinput');
-        fireworkDataTypeInput.innerHTML = '<select class="fireworkdatatypeinput"> <option value="burst">Burst</option> <option value="drift">Drift</option> <option value="pop">Pop</option> <option value="flash">Flash</option> <option value="zap">Zap</option> <option value="flower">Flower</option> <option value="flower2">Flower 2</option> </select>';
-        fireworkData.appendChild(fireworkDataTypeInput);
+          const fireworkData = document.createElement('fireworkdata');
+          fireworkData.id = firework.id;
+          fireworkData.className = 'fireworkdata';
+          
+          // Firework explosion type
+          const fireworkDataTypeLabel = document.createElement('fireworkdatatypelabel');
+          fireworkDataTypeLabel.className = 'fireworkdatatypelabel';
+          fireworkDataTypeLabel.innerHTML = "Type: ";
+          fireworkData.appendChild(fireworkDataTypeLabel);
 
-        const typeInput = fireworkDataTypeInput.children[0];
-        typeInput.value = firework.explosionType;
+          const fireworkDataTypeInput = document.createElement('fireworkdatatypeinput');
+          fireworkDataTypeInput.innerHTML = '<select class="fireworkdatatypeinput"> <option value="burst">Burst</option> <option value="drift">Drift</option> <option value="pop">Pop</option> <option value="flash">Flash</option> <option value="zap">Zap</option> <option value="flower">Flower</option> <option value="flower2">Flower 2</option> </select>';
+          fireworkData.appendChild(fireworkDataTypeInput);
 
-        // Update explosion type if input changes
-        typeInput.addEventListener("input", (event) => {
+          const typeInput = fireworkDataTypeInput.children[0];
+          typeInput.value = firework.explosionType;
 
-          firework.explosionType = typeInput.value;
+          // Update explosion type if input changes
+          typeInput.addEventListener("input", (event) => {
 
-          updateFireworkParameters(firework);
+            firework.explosionType = typeInput.value;
 
-        });
+            updateFireworkParameters(firework);
 
-        // Firework colors
-        const fireworkDataColorsLabel = document.createElement('fireworkdatacolorslabel');
-        fireworkDataColorsLabel.className = 'fireworkdatacolorslabel';
-        fireworkDataColorsLabel.innerHTML = "Colors: ";
-        fireworkData.appendChild(fireworkDataColorsLabel);
-
-        const fireworkDataColor0Input = document.createElement('fireworkdatacolor0input');
-        fireworkDataColor0Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 50%">';
-        fireworkData.appendChild(fireworkDataColor0Input);
-
-        const fireworkDataColor1Input = document.createElement('fireworkdatacolor1input');
-        fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 60%">';
-        fireworkData.appendChild(fireworkDataColor1Input);
-
-        const fireworkDataColor2Input = document.createElement('fireworkdatacolor2input');
-        fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 70%">';
-        fireworkData.appendChild(fireworkDataColor2Input);
-
-        const color0Input = fireworkDataColor0Input.children[0];
-        color0Input.value = rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255));
-
-        const color1Input = fireworkDataColor1Input.children[0];
-        color1Input.value = rgbToHex(Math.floor(firework.color1.r * 255), Math.floor(firework.color1.g * 255), Math.floor(firework.color1.b * 255));
-
-        const color2Input = fireworkDataColor2Input.children[0];
-        color2Input.value = rgbToHex(Math.floor(firework.color2.r * 255), Math.floor(firework.color2.g * 255), Math.floor(firework.color2.b * 255));
-
-        // Update colors if inputs change
-        color0Input.addEventListener("input", (event) => {
-
-          // Reset afterimage pass
-          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-          afterimagePass.uniforms['damp'].value = 0.0;
-
-          const newColor0 = hexToRgb(color0Input.value);
-
-          firework.color0 = new THREE.Color(newColor0.r, newColor0.g, newColor0.b);
-
-          if (firework.pathMesh.material != null) {
-            firework.pathMesh.material.color = firework.color0;
-          }
-          if (firework.projectileMesh.material != null) {
-            firework.projectileMesh.material.color = firework.color0;
-          }
-
-          firework.marker.style.setProperty('background-color', rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255)));
-
-          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
-
-        });
-
-        color1Input.addEventListener("input", (event) => {
-
-          // Reset afterimage pass
-          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-          afterimagePass.uniforms['damp'].value = 0.0;
-
-          const newColor1 = hexToRgb(color1Input.value);
-
-          firework.color1 = new THREE.Color(newColor1.r, newColor1.g, newColor1.b);
-
-          firework.explosionMeshes.forEach(explosionMesh => {
-            if (explosionMesh != null) {
-              explosionMesh.material.color = firework.color1;
-            }
-          });
-          firework.explosionPathMeshes.forEach(explosionPathMesh => {
-            if (explosionPathMesh != null) {
-              explosionPathMesh.material.color = firework.color1;
-            }
           });
 
-          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+          // Firework colors
+          const fireworkDataColorsLabel = document.createElement('fireworkdatacolorslabel');
+          fireworkDataColorsLabel.className = 'fireworkdatacolorslabel';
+          fireworkDataColorsLabel.innerHTML = "Colors: ";
+          fireworkData.appendChild(fireworkDataColorsLabel);
 
-        });
+          const fireworkDataColor0Input = document.createElement('fireworkdatacolor0input');
+          fireworkDataColor0Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 50%">';
+          fireworkData.appendChild(fireworkDataColor0Input);
 
-        color2Input.addEventListener("input", (event) => {
+          const fireworkDataColor1Input = document.createElement('fireworkdatacolor1input');
+          fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 60%">';
+          fireworkData.appendChild(fireworkDataColor1Input);
 
-          // Reset afterimage pass
-          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-          afterimagePass.uniforms['damp'].value = 0.0;
+          const fireworkDataColor2Input = document.createElement('fireworkdatacolor2input');
+          fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 70%">';
+          fireworkData.appendChild(fireworkDataColor2Input);
 
-          const newColor2 = hexToRgb(color2Input.value);
+          const color0Input = fireworkDataColor0Input.children[0];
+          color0Input.value = rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255));
 
-          firework.color2 = new THREE.Color(newColor2.r, newColor2.g, newColor2.b);
+          const color1Input = fireworkDataColor1Input.children[0];
+          color1Input.value = rgbToHex(Math.floor(firework.color1.r * 255), Math.floor(firework.color1.g * 255), Math.floor(firework.color1.b * 255));
 
-          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+          const color2Input = fireworkDataColor2Input.children[0];
+          color2Input.value = rgbToHex(Math.floor(firework.color2.r * 255), Math.floor(firework.color2.g * 255), Math.floor(firework.color2.b * 255));
 
-        });
+          // Update colors if inputs change
+          color0Input.addEventListener("input", (event) => {
 
-        // Firework scale
-        const fireworkDataScaleLabel = document.createElement('fireworkdatascalelabel');
-        fireworkDataScaleLabel.className = 'fireworkdatascalelabel';
-        fireworkDataScaleLabel.innerHTML = "Scale: ";
-        fireworkData.appendChild(fireworkDataScaleLabel);
+            // Reset afterimage pass
+            const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+            afterimagePass.uniforms['damp'].value = 0.0;
 
-        const fireworkDataScaleMinus = document.createElement('fireworkdatascaleminus');
-        fireworkDataScaleMinus.className = 'fireworkdatascale';
-        fireworkDataScaleMinus.id = 'fireworkdatascaleminus';
-        fireworkDataScaleMinus.innerHTML = '-';
-        fireworkData.appendChild(fireworkDataScaleMinus);
+            const newColor0 = hexToRgb(color0Input.value);
 
-        const fireworkDataScaleValue = document.createElement('fireworkdatascalevalue');
-        fireworkDataScaleValue.className = 'fireworkdatascale';
-        fireworkDataScaleValue.id = 'fireworkdatascalevalue';
-        fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
-        fireworkData.appendChild(fireworkDataScaleValue);
+            firework.color0 = new THREE.Color(newColor0.r, newColor0.g, newColor0.b);
 
-        const fireworkDataScalePlus = document.createElement('fireworkdatascaleplus');
-        fireworkDataScalePlus.className = 'fireworkdatascale';
-        fireworkDataScalePlus.id = 'fireworkdatascaleplus';
-        fireworkDataScalePlus.innerHTML = '+';
-        fireworkData.appendChild(fireworkDataScalePlus);
+            if (firework.pathMesh.material != null) {
+              firework.pathMesh.material.color = firework.color0;
+            }
+            if (firework.projectileMesh.material != null) {
+              firework.projectileMesh.material.color = firework.color0;
+            }
 
-        fireworkDataScaleMinus.onmouseover = function() {
-          body.style.setProperty('cursor', 'pointer');
-        }
-        fireworkDataScaleMinus.onmouseout = function() {
-          body.style.setProperty('cursor', 'default');
-        }
-        fireworkDataScaleMinus.onclick = function() {
-          if (firework.explosionScale > scaleValueMin) {
-            firework.explosionScale -= 0.25;
-            if (firework.explosionScale < scaleValueMin) firework.explosionScale = scaleValueMin;
-            fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
-            updateFireworkParameters(firework);
+            firework.marker.style.setProperty('background-color', rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255)));
+
+            requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+          });
+
+          color1Input.addEventListener("input", (event) => {
+
+            // Reset afterimage pass
+            const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+            afterimagePass.uniforms['damp'].value = 0.0;
+
+            const newColor1 = hexToRgb(color1Input.value);
+
+            firework.color1 = new THREE.Color(newColor1.r, newColor1.g, newColor1.b);
+
+            firework.explosionMeshes.forEach(explosionMesh => {
+              if (explosionMesh != null) {
+                explosionMesh.material.color = firework.color1;
+              }
+            });
+            firework.explosionPathMeshes.forEach(explosionPathMesh => {
+              if (explosionPathMesh != null) {
+                explosionPathMesh.material.color = firework.color1;
+              }
+            });
+
+            requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+          });
+
+          color2Input.addEventListener("input", (event) => {
+
+            // Reset afterimage pass
+            const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+            afterimagePass.uniforms['damp'].value = 0.0;
+
+            const newColor2 = hexToRgb(color2Input.value);
+
+            firework.color2 = new THREE.Color(newColor2.r, newColor2.g, newColor2.b);
+
+            requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
+          });
+
+          // Firework scale
+          const fireworkDataScaleLabel = document.createElement('fireworkdatascalelabel');
+          fireworkDataScaleLabel.className = 'fireworkdatascalelabel';
+          fireworkDataScaleLabel.innerHTML = "Scale: ";
+          fireworkData.appendChild(fireworkDataScaleLabel);
+
+          const fireworkDataScaleMinus = document.createElement('fireworkdatascaleminus');
+          fireworkDataScaleMinus.className = 'fireworkdatascale';
+          fireworkDataScaleMinus.id = 'fireworkdatascaleminus';
+          fireworkDataScaleMinus.innerHTML = '-';
+          fireworkData.appendChild(fireworkDataScaleMinus);
+
+          const fireworkDataScaleValue = document.createElement('fireworkdatascalevalue');
+          fireworkDataScaleValue.className = 'fireworkdatascale';
+          fireworkDataScaleValue.id = 'fireworkdatascalevalue';
+          fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+          fireworkData.appendChild(fireworkDataScaleValue);
+
+          const fireworkDataScalePlus = document.createElement('fireworkdatascaleplus');
+          fireworkDataScalePlus.className = 'fireworkdatascale';
+          fireworkDataScalePlus.id = 'fireworkdatascaleplus';
+          fireworkDataScalePlus.innerHTML = '+';
+          fireworkData.appendChild(fireworkDataScalePlus);
+
+          fireworkDataScaleMinus.onmouseover = function() {
+            body.style.setProperty('cursor', 'pointer');
           }
-        }
-
-        fireworkDataScalePlus.onmouseover = function() {
-          body.style.setProperty('cursor', 'pointer');
-        }
-        fireworkDataScalePlus.onmouseout = function() {
-          body.style.setProperty('cursor', 'default');
-        }
-        fireworkDataScalePlus.onclick = function() {
-          if (firework.explosionScale < scaleValueMax) {
-            firework.explosionScale += 0.25;
-            if (firework.explosionScale > scaleValueMax) firework.explosionScale = scaleValueMax;
-            fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
-            updateFireworkParameters(firework);
+          fireworkDataScaleMinus.onmouseout = function() {
+            body.style.setProperty('cursor', 'default');
           }
+          fireworkDataScaleMinus.onclick = function() {
+            if (firework.explosionScale > scaleValueMin) {
+              firework.explosionScale -= 0.25;
+              if (firework.explosionScale < scaleValueMin) firework.explosionScale = scaleValueMin;
+              fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+              updateFireworkParameters(firework);
+            }
+          }
+
+          fireworkDataScalePlus.onmouseover = function() {
+            body.style.setProperty('cursor', 'pointer');
+          }
+          fireworkDataScalePlus.onmouseout = function() {
+            body.style.setProperty('cursor', 'default');
+          }
+          fireworkDataScalePlus.onclick = function() {
+            if (firework.explosionScale < scaleValueMax) {
+              firework.explosionScale += 0.25;
+              if (firework.explosionScale > scaleValueMax) firework.explosionScale = scaleValueMax;
+              fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
+              updateFireworkParameters(firework);
+            }
+          }
+
+          // Firework position
+          const fireworkDataPositionLabel = document.createElement('fireworkdatapositionlabel');
+          fireworkDataPositionLabel.className = 'fireworkdatapositionlabel';
+          fireworkDataPositionLabel.innerHTML = "Position: ";
+          fireworkData.appendChild(fireworkDataPositionLabel);
+
+          const fireworkDataPosition = document.createElement('fireworkdataposition');
+          fireworkDataPosition.className = 'fireworkdataposition';
+          fireworkDataPosition.innerHTML = "X: " + firework.position.x + ", Y: " + firework.position.y;
+          fireworkData.appendChild(fireworkDataPosition);
+
+          // Remove firework
+          const removeFireworkButton = document.createElement('removefireworkbutton');
+          removeFireworkButton.className = 'removefireworkbutton';
+          removeFireworkButton.innerHTML = '<img src="' + trashIconDarkUrl + '">';
+          fireworkData.appendChild(removeFireworkButton);
+          
+          removeFireworkButton.onmouseover = function() {
+            body.style.setProperty('cursor', 'pointer');
+          }
+          removeFireworkButton.onmouseout = function() {
+            body.style.setProperty('cursor', 'default');
+          }
+          removeFireworkButton.onclick = function() {
+            removeFirework(firework);
+          }
+
+          // Append firework data to parent
+          fireworkDataWrapper.appendChild(fireworkData);
+
         }
 
-        // Firework position
-        const fireworkDataPositionLabel = document.createElement('fireworkdatapositionlabel');
-        fireworkDataPositionLabel.className = 'fireworkdatapositionlabel';
-        fireworkDataPositionLabel.innerHTML = "Position: ";
-        fireworkData.appendChild(fireworkDataPositionLabel);
+      });
 
-        const fireworkDataPosition = document.createElement('fireworkdataposition');
-        fireworkDataPosition.className = 'fireworkdataposition';
-        fireworkDataPosition.innerHTML = "X: " + firework.position.x + ", Y: " + firework.position.y;
-        fireworkData.appendChild(fireworkDataPosition);
-
-        // Remove firework
-        const removeFireworkButton = document.createElement('removefireworkbutton');
-        removeFireworkButton.className = 'removefireworkbutton';
-        removeFireworkButton.innerHTML = '<img src="' + trashIconDarkUrl + '">';
-        fireworkData.appendChild(removeFireworkButton);
-        
-        removeFireworkButton.onmouseover = function() {
-          body.style.setProperty('cursor', 'pointer');
-        }
-        removeFireworkButton.onmouseout = function() {
-          body.style.setProperty('cursor', 'default');
-        }
-        removeFireworkButton.onclick = function() {
-          removeFirework(firework);
-        }
-
-        // Append firework data to parent
-        fireworkDataWrapper.appendChild(fireworkData);
-
-      }
-
-    });
+    }
 
   }
 
@@ -872,25 +886,30 @@ function init() {
 
     if (timelinePosition > timelineLength) timelinePosition = timelineLength;
 
-    fireworks.forEach(firework => {
-      if (firework.recorded) {
-        if (firework.explodeTime <= timelineLength) {
-          firework.marker.style.visibility = "visible";
-          firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
+    if (typeof fireworks !== 'undefined' && fireworks != null) {
+      fireworks.forEach(firework => {
+        if (firework.recorded) {
+          if (firework.explodeTime <= timelineLength) {
+            firework.marker.style.visibility = "visible";
+            firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
+          }
+          else {
+            const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+            afterimagePass.uniforms['damp'].value = 0.0;
+            if (!timelinePlaying) updateFireworks();
+            firework.marker.style.visibility = "hidden";
+            requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+          }
         }
-        else {
-          const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-          afterimagePass.uniforms['damp'].value = 0.0;
-          if (!timelinePlaying) updateFireworks();
-          firework.marker.style.visibility = "hidden";
-          requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
-        }
-      }
-    });
+      });
+    }
 
     updateTimelinePositionMarker();
 
     if (!timelinePlaying) updateOutlinerData();
+
+    searchParams.set('t', (timelineLength * 0.001).toFixed(0));
+    updateUrlHistory();
 
   }
 
@@ -1110,9 +1129,16 @@ function init() {
   // Night sky param
   const nightSkyParam = searchParams.get('s');
   if (nightSkyParam != null) nightSkyBool = nightSkyParam == '0' ? false : true;
-  else searchParams.set('s', '1');
   toggleNightSky();
   nightSkyToggle.checked = nightSkyBool;
+
+  // Timeline length param
+  const timelineLengthParam = searchParams.get('t');
+  if (timelineLengthParam != null) {
+    const tlp = parseInt(timelineLengthParam);
+    timelineLength = (tlp >= 10 && tlp <= 60) ? tlp * 1000 : timelineLength;
+  }
+  updateTimelineLength();
 
   // Update url with params
   function updateUrlHistory() {
