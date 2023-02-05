@@ -164,6 +164,7 @@ function init() {
       fireworks = [];
       warningOverlay.style.visibility = 'hidden';
       body.style.setProperty('cursor', 'default');
+      updateFireworksSearchParam();
     }
 
     warningCancelButton.onmouseover = function() {
@@ -622,6 +623,8 @@ function init() {
 
             updateFireworkParameters(firework);
 
+            updateFireworksSearchParam();
+
           });
 
           // Firework colors
@@ -652,6 +655,7 @@ function init() {
           color2Input.value = rgbToHex(Math.floor(firework.color2.r * 255), Math.floor(firework.color2.g * 255), Math.floor(firework.color2.b * 255));
 
           // Update colors if inputs change
+          var colorUpdateTimeout;
           color0Input.addEventListener("input", (event) => {
 
             // Reset afterimage pass
@@ -661,6 +665,9 @@ function init() {
             const newColor0 = hexToRgb(color0Input.value);
 
             firework.color0 = new THREE.Color(newColor0.r, newColor0.g, newColor0.b);
+
+            if (colorUpdateTimeout != null) clearTimeout(colorUpdateTimeout);
+            colorUpdateTimeout = setTimeout(function() { updateFireworksSearchParam(); }, 100);
 
             if (firework.pathMesh.material != null) {
               firework.pathMesh.material.color = firework.color0;
@@ -684,6 +691,9 @@ function init() {
             const newColor1 = hexToRgb(color1Input.value);
 
             firework.color1 = new THREE.Color(newColor1.r, newColor1.g, newColor1.b);
+
+            if (colorUpdateTimeout != null) clearTimeout(colorUpdateTimeout);
+            colorUpdateTimeout = setTimeout(function() { updateFireworksSearchParam(); }, 100);
 
             firework.explosionMeshes.forEach(explosionMesh => {
               if (explosionMesh != null) {
@@ -709,6 +719,9 @@ function init() {
             const newColor2 = hexToRgb(color2Input.value);
 
             firework.color2 = new THREE.Color(newColor2.r, newColor2.g, newColor2.b);
+
+            if (colorUpdateTimeout != null) clearTimeout(colorUpdateTimeout);
+            colorUpdateTimeout = setTimeout(function() { updateFireworksSearchParam(); }, 100);
 
             requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
 
@@ -750,6 +763,7 @@ function init() {
               if (firework.explosionScale < scaleValueMin) firework.explosionScale = scaleValueMin;
               fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
               updateFireworkParameters(firework);
+              updateFireworksSearchParam();
             }
           }
 
@@ -765,6 +779,7 @@ function init() {
               if (firework.explosionScale > scaleValueMax) firework.explosionScale = scaleValueMax;
               fireworkDataScaleValue.innerHTML = firework.explosionScale.toFixed(2);
               updateFireworkParameters(firework);
+              updateFireworksSearchParam();
             }
           }
 
@@ -793,6 +808,7 @@ function init() {
           }
           removeFireworkButton.onclick = function() {
             removeFirework(firework);
+            updateFireworksSearchParam();
           }
 
           // Append firework data to parent
@@ -923,6 +939,7 @@ function init() {
     if (timelineLength > 10000) {
       timelineLength -= 5000;
       updateTimelineLength();
+      updateFireworksSearchParam();
     }
   }
 
@@ -936,6 +953,7 @@ function init() {
     if (timelineLength < 60000) {
       timelineLength += 5000;
       updateTimelineLength();
+      updateFireworksSearchParam();
     }
   }
 
@@ -1114,7 +1132,7 @@ function init() {
   }
   toggleUI();
 
-  /* Check url tokens */
+  /* Url search params */
   const url = new URL(window.location);
   const urlOrigin = url.origin;
   const searchParams = url.searchParams;
@@ -1140,16 +1158,137 @@ function init() {
   }
   updateTimelineLength();
 
+  // Set site mode based on presence of firework tokens in url
+  const fireworksParam = searchParams.get('f');
+  if (fireworksParam != null) toggleSiteMode();
+
+  // Update fireworks param
+  function updateFireworksSearchParam() {
+
+    let newFireworksParam = '';
+  
+    function rgbToThree(color) {
+
+      function floatToChar(value) {
+
+        value = value.toFixed(2);
+        let stringValue;
+        
+        if (value < 0.5) {
+          stringValue = Math.floor(value * 20).toString(); 
+        }
+        else if (value >= 0.5 && value < 0.55) {
+          stringValue = 'a'
+        }
+        else if (value >= 0.55 && value < 0.6) {
+          stringValue = 'b'
+        }
+        else if (value >= 0.6 && value < 0.65) {
+          stringValue = 'c'
+        }
+        else if (value >= 0.65 && value < 0.7) {
+          stringValue = 'd'
+        }
+        else if (value >= 0.7 && value < 0.75) {
+          stringValue = 'e'
+        }
+        else if (value >= 0.75 && value < 0.8) {
+          stringValue = 'f'
+        }
+        else if (value >= 0.8 && value < 0.85) {
+          stringValue = 'g'
+        }
+        else if (value >= 0.85 && value < 0.9) {
+          stringValue = 'h'
+        }
+        else if (value >= 0.9 && value < 0.95) {
+          stringValue = 'i'
+        }
+        else if (value >= 0.95 && value < 1.0) {
+          stringValue = 'j'
+        }
+        else {
+          stringValue = 'k'
+        }
+
+        return stringValue;
+
+      }
+
+      const r = floatToChar(color.r);
+      const g = floatToChar(color.g);
+      const b = floatToChar(color.b);
+
+      const rgb = r + g + b;
+
+      return rgb;
+
+    }
+
+    fireworks.forEach(firework => {
+      
+      if (firework.recorded) {
+
+        let thisFireworkToken;
+
+        // Firework type
+        for (let i = 0; i < explosionTypeNames.length; i++) {
+          
+          if (explosionTypeNames[i] == firework.explosionType) thisFireworkToken = i.toString();
+
+        }
+
+        // Firework color
+        const fireworkColor0 = rgbToThree(firework.color0);
+        const fireworkColor1 = rgbToThree(firework.color1);
+        const fireworkColor2 = rgbToThree(firework.color2);
+
+        thisFireworkToken += fireworkColor0 + fireworkColor1 + fireworkColor2;
+
+        // Firework scale
+        let fireworkScale = Math.round(firework.explosionScale * 10.0).toString();
+        if (fireworkScale.length != 2) fireworkScale = '0' + fireworkScale;
+        thisFireworkToken += fireworkScale;
+
+        // Firework audio
+        let fireworkAudio = 0;
+        if (firework.launchAudioToggle && !firework.explosionAudioToggle) fireworkAudio = 1;
+        else if (!firework.launchAudioToggle && firework.explosionAudioToggle) fireworkAudio = 2;
+        else if (firework.launchAudioToggle && firework.explosionAudioToggle) fireworkAudio = 3;
+        thisFireworkToken += fireworkAudio;
+
+        // Firework position
+        thisFireworkToken += Math.floor(firework.position.x).toString() + Math.floor(firework.position.y).toString();
+
+        // Firework explosion time
+        let fireworkTime = firework.explodeTime / timelineLength;
+        fireworkTime = Math.floor(fireworkTime * 1000).toString();
+        if (fireworkTime.length < 2) fireworkTime = '000' + fireworkTime;
+        else if (fireworkTime.length < 3) fireworkTime = '00' + fireworkTime;
+        else if (fireworkTime.length < 4) fireworkTime = '0' + fireworkTime;
+
+        thisFireworkToken += fireworkTime;
+
+        // Add to all fireworks param
+        newFireworksParam += thisFireworkToken;
+
+      }
+
+    });
+
+    if (newFireworksParam != '') searchParams.set('f', newFireworksParam);
+    else if (searchParams.get('f') != null) searchParams.delete('f');
+
+    updateUrlHistory();
+
+  }
+
   // Update url with params
   function updateUrlHistory() {
     window.history.replaceState({}, "Fireworks!", urlOrigin + "/?" + searchParams);
   }
   updateUrlHistory();
 
-  // Set site mode based on presence of firework tokens in url
-  var urlToken = false;
-
-  if (urlToken) toggleSiteMode();
 
   /* Firework class */
   class Firework {
@@ -1542,11 +1681,17 @@ function init() {
         marker
       );
 
-    if (!timelinePlaying && recording) {
+    if (recording) {
       
-      updateFireworks();
+      updateFireworksSearchParam();
 
-      updateOutlinerData();
+      if (!timelinePlaying) {
+
+        updateFireworks();
+
+        updateOutlinerData();
+
+      }
 
     }
 
