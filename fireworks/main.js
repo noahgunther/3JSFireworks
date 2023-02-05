@@ -1258,11 +1258,17 @@ function init() {
         thisFireworkToken += fireworkAudio;
 
         // Firework position
-        thisFireworkToken += Math.floor(firework.position.x).toString() + Math.floor(firework.position.y).toString();
+        let fireworkPositionX = Math.round(firework.position.x).toString();
+        let fireworkPositionY = Math.round(firework.position.y).toString();
+        if (fireworkPositionX.length < 2) fireworkPositionX = '0' + fireworkPositionX;
+        else if (fireworkPositionX.length > 2) fireworkPositionX = 'a0';
+        if (fireworkPositionY.length < 2) fireworkPositionY = '0' + fireworkPositionY;
+        else if (fireworkPositionY.length > 2) fireworkPositionY = 'a0';
+        thisFireworkToken += fireworkPositionX + fireworkPositionY;
 
         // Firework explosion time
         let fireworkTime = firework.explodeTime / timelineLength;
-        fireworkTime = Math.floor(fireworkTime * 1000).toString();
+        fireworkTime = Math.round(fireworkTime * 1000).toString();
         if (fireworkTime.length < 2) fireworkTime = '000' + fireworkTime;
         else if (fireworkTime.length < 3) fireworkTime = '00' + fireworkTime;
         else if (fireworkTime.length < 4) fireworkTime = '0' + fireworkTime;
