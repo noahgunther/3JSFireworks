@@ -1160,7 +1160,122 @@ function init() {
 
   // Set site mode based on presence of firework tokens in url
   const fireworksParam = searchParams.get('f');
-  if (fireworksParam != null) toggleSiteMode();
+
+  // Create fireworks from searchparam
+  function createFireworksFromSearchParam(token) {
+
+    function threeToRgb(three) {
+
+      function charToFloat(char) {
+
+        let floatValue;
+
+        if (char == '0') {
+          floatValue = 0;
+        }
+        else if (char == '1') {
+          floatValue = 0.05;
+        }
+        else if (char == '2') {
+          floatValue = 0.1;
+        }
+        else if (char == '3') {
+          floatValue = 0.15;
+        }
+        else if (char == '4') {
+          floatValue = 0.2;
+        }
+        else if (char == '5') {
+          floatValue = 0.25;
+        }
+        else if (char == '6') {
+          floatValue = 0.3;
+        }
+        else if (char == '7') {
+          floatValue = 0.35;
+        }
+        else if (char == '8') {
+          floatValue = 0.4;
+        }
+        else if (char == '9') {
+          floatValue = 0.45;
+        }
+        else if (char == 'a') {
+          floatValue = 0.5;
+        }
+        else if (char == 'b') {
+          floatValue = 0.55;
+        }
+        else if (char == 'c') {
+          floatValue = 0.6;
+        }
+        else if (char == 'd') {
+          floatValue = 0.65;
+        }
+        else if (char == 'e') {
+          floatValue = 0.7;
+        }
+        else if (char == 'f') {
+          floatValue = 0.75;
+        }
+        else if (char == 'g') {
+          floatValue = 0.8;
+        }
+        else if (char == 'h') {
+          floatValue = 0.85;
+        }
+        else if (char == 'i') {
+          floatValue = 0.9;
+        }
+        else if (char == 'j') {
+          floatValue = 0.95;
+        }
+        else if (char == 'k') {
+          floatValue = 1.0;
+        }
+
+        return floatValue;
+
+      }
+
+      const r = charToFloat(three.charAt(0));
+      const g = charToFloat(three.charAt(1));
+      const b = charToFloat(three.charAt(2));
+
+      const rgb = new THREE.Color(r, g, b);
+
+      return rgb;
+
+    }
+
+    const type = explosionTypeNames[parseInt(token.charAt(0))];
+    const color0 = threeToRgb(token.substring(1, 4));
+    const color1 = threeToRgb(token.substring(4, 7));
+    const color2 = threeToRgb(token.substring(7, 10));
+    const scale = (parseInt(token.substring(10, 12)) * 0.1).toFixed(1);
+    const launchAudio = parseInt(token.charAt(12)) == 1 || parseInt(token.charAt(12)) == 3 ? true : false;
+    const explosionAudio = parseInt(token.charAt(12)) > 1 ? true : false;
+    const positionX = token.substring(13, 15);
+    const positionY = token.substring(15, 17);
+    const time = token.substring(17, 22);
+
+    console.log(type, color0, color1, color2, scale, launchAudio, explosionAudio);
+
+    /*createFirework(
+      0,
+      true,
+      false,
+    )*/
+
+  }
+
+  if (fireworksParam != null) {
+    
+    createFireworksFromSearchParam(fireworksParam);
+    
+    toggleSiteMode();
+
+  }
 
   // Update fireworks param
   function updateFireworksSearchParam() {
@@ -1247,7 +1362,7 @@ function init() {
 
         // Firework scale
         let fireworkScale = Math.round(firework.explosionScale * 10.0).toString();
-        if (fireworkScale.length != 2) fireworkScale = '0' + fireworkScale;
+        if (fireworkScale.length < 2) fireworkScale = '0' + fireworkScale;
         thisFireworkToken += fireworkScale;
 
         // Firework audio
