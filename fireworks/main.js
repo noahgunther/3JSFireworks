@@ -131,6 +131,79 @@ function init() {
     intersectionPoint = raycastIntersects[0].point;
   });
 
+  /* Firework class */
+  var fireworks = [];
+
+  class Firework {
+    constructor(
+      id,
+      active,
+      recorded,
+      playLaunchOneShot,
+      launchCompleted,
+      launchAudioToggle,
+      launchAudioPlayed,
+      launchAudio,
+      explosionAudioToggle,
+      explosionAudioPlayed,
+      explosionAudio,
+      explosionPlayed,
+      projectileDisposed,
+      explosionDisposed,
+      launchDuration, 
+      launchTime, 
+      originPoint, 
+      terminalPoint, 
+      explodeDuration, 
+      explodeTime,
+      explosionTerminalPoints,
+      projectileMesh,
+      pathMesh,
+      explosionMeshes,
+      explosionPathMeshes,
+      explosionType,
+      color0,
+      color1,
+      color2,
+      explosionScale,
+      position,
+      marker
+    ) {
+      this.id = id;
+      this.active = active;
+      this.recorded = recorded;
+      this.playLaunchOneShot = playLaunchOneShot;
+      this.launchCompleted = launchCompleted;
+      this.launchAudioToggle = launchAudioToggle;
+      this.launchAudioPlayed = launchAudioPlayed;
+      this.launchAudio = launchAudio;
+      this.explosionAudioToggle = explosionAudioToggle;
+      this.explosionAudioPlayed = explosionAudioPlayed;
+      this.explosionAudio = explosionAudio;
+      this.explosionPlayed = explosionPlayed;
+      this.projectileDisposed = projectileDisposed;
+      this.explosionDisposed = explosionDisposed;
+      this.launchDuration = launchDuration;
+      this.launchTime = launchTime;
+      this.originPoint = originPoint;
+      this.terminalPoint = terminalPoint;
+      this.explodeDuration = explodeDuration;
+      this.explodeTime = explodeTime;
+      this.explosionTerminalPoints = explosionTerminalPoints;
+      this.projectileMesh = projectileMesh;
+      this.pathMesh = pathMesh;
+      this.explosionMeshes = explosionMeshes;
+      this.explosionPathMeshes = explosionPathMeshes;
+      this.explosionType = explosionType;
+      this.color0 = color0;
+      this.color1 = color1;
+      this.color2 = color2;
+      this.explosionScale = explosionScale;
+      this.position = position;
+      this.marker = marker;
+    }
+  }
+
   /* Trash all button */
   const trashAllButton = document.getElementById("trash");
   const warningOverlay = document.getElementById("warning");
@@ -234,11 +307,11 @@ function init() {
       playButtonImg.style.visibility = !timelinePlaying ? 'visible' : 'hidden';
       pauseButtonImg.style.visibility = timelinePlaying ? 'visible' : 'hidden';
 
-      timelinePosition = 0.0;
+      timelinePosition = recording ? 0.0 : -100000;
 
       updateTimelinePositionMarker();
 
-      updateFireworks();
+      updateFireworks(true);
 
       editorSettings.style.zIndex = '1';
       nextFirework.style.zIndex = '1';
@@ -356,7 +429,7 @@ function init() {
       
     });
 
-    updateFireworks();
+    updateFireworks(false);
 
     updateOutlinerData();
 
@@ -912,7 +985,7 @@ function init() {
           else {
             const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
             afterimagePass.uniforms['damp'].value = 0.0;
-            if (!timelinePlaying) updateFireworks();
+            if (!timelinePlaying) updateFireworks(false);
             firework.marker.style.visibility = "hidden";
             requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
           }
@@ -1162,7 +1235,7 @@ function init() {
   const fireworksParam = searchParams.get('f');
 
   // Create fireworks from searchparam
-  function createFireworksFromSearchParam(token) {
+  function createFireworksFromSearchParam(token, index) {
 
     function threeToRgb(three) {
 
@@ -1252,26 +1325,57 @@ function init() {
     const color0 = threeToRgb(token.substring(1, 4));
     const color1 = threeToRgb(token.substring(4, 7));
     const color2 = threeToRgb(token.substring(7, 10));
-    const scale = (parseInt(token.substring(10, 12)) * 0.1).toFixed(1);
+    const scale = Number((parseInt(token.substring(10, 12)) * 0.1).toFixed(1));
     const launchAudio = parseInt(token.charAt(12)) == 1 || parseInt(token.charAt(12)) == 3 ? true : false;
     const explosionAudio = parseInt(token.charAt(12)) > 1 ? true : false;
-    const positionX = token.substring(13, 15);
-    const positionY = token.substring(15, 17);
-    const time = token.substring(17, 22);
+    const positionX = token.charAt(13) == 'a' ? 100 : parseInt(token.substring(13, 15));
+    const positionY = token.charAt(15) == 'a' ? 100 : parseInt(token.substring(15, 17));
+    const time = Number((parseInt(token.substring(17, 22)) * 0.001).toFixed(3));
 
-    console.log(type, color0, color1, color2, scale, launchAudio, explosionAudio);
+    const terminalPointRaycast = new THREE.Raycaster();
+    const fireworkPagePosition = new THREE.Vector2((positionX / 100) * 2 - 1, (positionY / 100) * 2 - 1);
+    terminalPointRaycast.setFromCamera(fireworkPagePosition, camera);
+    const raycastIntersects = terminalPointRaycast.intersectObjects(interesectionObjects, true);
+    const intersectionPoint = raycastIntersects[0].point;
 
-    /*createFirework(
-      0,
+    createFirework(
+      index,
       true,
       false,
-    )*/
+      launchAudio,
+      false,
+      explosionAudio,
+      false,
+      false,
+      false,
+      false,
+      new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z),
+      time * timelineLength,
+      createProjectile(color0),
+      null,
+      type,
+      color0,
+      color1,
+      color2,
+      scale,
+      new THREE.Vector2(positionX, positionY)
+    )
 
   }
 
   if (fireworksParam != null) {
+
+    const fireworksFromParamCount = fireworksParam.length / 21;
+
+    for (let i = 0; i < fireworksFromParamCount; i++) {
+
+      const fireworkString = fireworksParam.substring(i * 21, (i+1) * 21);
+
+      console.log(fireworkString);
     
-    createFireworksFromSearchParam(fireworksParam);
+      createFireworksFromSearchParam(fireworkString, i);
+
+    }
     
     toggleSiteMode();
 
@@ -1410,78 +1514,6 @@ function init() {
   }
   updateUrlHistory();
 
-
-  /* Firework class */
-  class Firework {
-    constructor(
-      id,
-      active,
-      recorded,
-      playLaunchOneShot,
-      launchCompleted,
-      launchAudioToggle,
-      launchAudioPlayed,
-      launchAudio,
-      explosionAudioToggle,
-      explosionAudioPlayed,
-      explosionAudio,
-      explosionPlayed,
-      projectileDisposed,
-      explosionDisposed,
-      launchDuration, 
-      launchTime, 
-      originPoint, 
-      terminalPoint, 
-      explodeDuration, 
-      explodeTime,
-      explosionTerminalPoints,
-      projectileMesh,
-      pathMesh,
-      explosionMeshes,
-      explosionPathMeshes,
-      explosionType,
-      color0,
-      color1,
-      color2,
-      explosionScale,
-      position,
-      marker
-    ) {
-      this.id = id;
-      this.active = active;
-      this.recorded = recorded;
-      this.playLaunchOneShot = playLaunchOneShot;
-      this.launchCompleted = launchCompleted;
-      this.launchAudioToggle = launchAudioToggle;
-      this.launchAudioPlayed = launchAudioPlayed;
-      this.launchAudio = launchAudio;
-      this.explosionAudioToggle = explosionAudioToggle;
-      this.explosionAudioPlayed = explosionAudioPlayed;
-      this.explosionAudio = explosionAudio;
-      this.explosionPlayed = explosionPlayed;
-      this.projectileDisposed = projectileDisposed;
-      this.explosionDisposed = explosionDisposed;
-      this.launchDuration = launchDuration;
-      this.launchTime = launchTime;
-      this.originPoint = originPoint;
-      this.terminalPoint = terminalPoint;
-      this.explodeDuration = explodeDuration;
-      this.explodeTime = explodeTime;
-      this.explosionTerminalPoints = explosionTerminalPoints;
-      this.projectileMesh = projectileMesh;
-      this.pathMesh = pathMesh;
-      this.explosionMeshes = explosionMeshes;
-      this.explosionPathMeshes = explosionPathMeshes;
-      this.explosionType = explosionType;
-      this.color0 = color0;
-      this.color1 = color1;
-      this.color2 = color2;
-      this.explosionScale = explosionScale;
-      this.position = position;
-      this.marker = marker;
-    }
-  }
-
   /* 3D geometry creation functions */
   function createProjectile(color) {
 
@@ -1602,7 +1634,6 @@ function init() {
   /* Firework creation and modification */
   var mouseDown = false;
   var currentProjectile;
-  var fireworks = [];
 
   canvas.onmousedown = function() {
 
@@ -1649,6 +1680,7 @@ function init() {
         false,
         false,
         terminalPoint,
+        timelinePosition,
         currentProjectile,
         null,
         explosionType,
@@ -1675,6 +1707,7 @@ function init() {
     projectileDisposed,
     explosionDisposed,
     terminalPoint,
+    explodeTime,
     projectileMesh,
     pathMesh,
     type,
@@ -1739,7 +1772,6 @@ function init() {
         const shrapnelGeometry = new THREE.SphereGeometry(0.0025, segmentCount, segmentCount);
         const shrapnelMaterial = new THREE.MeshBasicMaterial({ color: color });
         const shrapnel = new THREE.Mesh(shrapnelGeometry, shrapnelMaterial);
-        scene.add(shrapnel);
         shrapnel.position.set(p.x, p.y, p.z);
 
         return shrapnel;
@@ -1752,13 +1784,13 @@ function init() {
 
     // Create timeline marker
     let marker = null;
-    if (recording) {
+    if (recorded) {
 
       marker = document.createElement('marker');
       marker.className = 'timelinemarker';
-      marker.style.setProperty('left', (timelinePosition / timelineLength) * 100.0 + '%');
+      marker.style.setProperty('left', (explodeTime / timelineLength) * 100.0 + '%');
       marker.style.setProperty('background-color', rgbToHex(Math.floor(color0.r * 255), Math.floor(color0.g * 255), Math.floor(color0.b * 255)));
-      
+
       timelineMarkersWrapper.appendChild(marker);
 
     }
@@ -1783,11 +1815,11 @@ function init() {
         projectileDisposed,
         explosionDisposed,
         launchDuration,
-        recorded ? timelinePosition - launchDuration : Date.now(),
+        recorded ? explodeTime - launchDuration : Date.now(),
         setLaunchPosition(),
         terminalPoint,
         explodeDuration,
-        recorded ? timelinePosition : Date.now() + launchDuration,
+        recorded ? explodeTime : Date.now() + launchDuration,
         explosionTerminalPoints,
         projectileMesh,
         pathMesh,
@@ -1808,7 +1840,7 @@ function init() {
 
       if (!timelinePlaying) {
 
-        updateFireworks();
+        updateFireworks(false);
 
         updateOutlinerData();
 
@@ -1864,6 +1896,7 @@ function init() {
       firework.projectileDisposed,
       firework.explosionDisposed,
       firework.terminalPoint,
+      firework.explodeTime,
       firework.projectileMesh,
       firework.pathMesh,
       firework.explosionType,
@@ -1937,7 +1970,7 @@ function init() {
         }
       });
 
-      updateFireworks();
+      updateFireworks(false);
     
     });
 
@@ -2199,9 +2232,9 @@ function init() {
   var timeOnLastFrame = 0.0;
   var lastTimelinePosition;
 
-  function updateFireworks() {
+  function updateFireworks(updateOnce) {
     for (let i = 0; i < fireworks.length; i++) {
-      if (fireworks[i].recorded == recording) {
+      if (fireworks[i].recorded == recording || updateOnce) {
         animateFirework(i);
       }
     }
@@ -2249,7 +2282,7 @@ function init() {
         
           updateTimelinePositionMarker();
 
-          updateFireworks();
+          updateFireworks(false);
 
           updateOutlinerData();
 
@@ -2287,7 +2320,7 @@ function init() {
 
           updateTimelinePositionMarker();
 
-          updateFireworks();
+          updateFireworks(false);
 
           updateOutlinerData();
 
@@ -2329,7 +2362,7 @@ function init() {
 
           updateTimelinePositionMarker();
 
-          updateFireworks();
+          updateFireworks(false);
 
           updateOutlinerData();
 
@@ -2349,7 +2382,7 @@ function init() {
 
         updateTimelinePositionMarker();
 
-        updateFireworks();
+        updateFireworks(false);
 
         updateOutlinerData();
 
@@ -2367,7 +2400,7 @@ function init() {
 
         updateTimelinePositionMarker();
 
-        updateFireworks();
+        updateFireworks(false);
 
         updateOutlinerData();
 
@@ -2405,7 +2438,7 @@ function init() {
 
         updateTimelinePositionMarker();
 
-        updateFireworks();
+        updateFireworks(false);
 
         clearOutlinerData();
 
@@ -2427,7 +2460,7 @@ function init() {
 
         updateTimelinePositionMarker();
 
-        updateFireworks();
+        updateFireworks(false);
 
         clearOutlinerData();
 
@@ -2439,7 +2472,7 @@ function init() {
 
     else {
 
-      updateFireworks();
+      updateFireworks(false);
 
     }
     

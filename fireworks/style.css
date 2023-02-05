@@ -266,7 +266,7 @@ body{
   position: absolute;
   top: max(6%, 2em);
   left: 20%;
-  height: max(3%, 40px);
+  height: max(5%, 40px);
   width: max(10%, 170px);
   line-height: 250%;
   border-radius: 2em;
