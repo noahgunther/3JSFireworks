@@ -35,6 +35,7 @@ function init() {
 
   /* Initialize main scene */
   const body = document.getElementById('body');
+  const loadingScreen = document.getElementById('loadingbackground');
 
   const scene = new THREE.Scene();
 
@@ -260,6 +261,7 @@ function init() {
   const toggleSiteModeLink = document.getElementById("togglemodelink");
   const documentationLink = document.getElementById("documentationlink");
   const aboutLink = document.getElementById("aboutlink");
+  const bigPlayButton = document.getElementById("bigplaybutton");
 
   shareShowLink.onmouseover = function() {
     body.style.setProperty('cursor', 'pointer');
@@ -301,6 +303,8 @@ function init() {
 
     if (siteMode == 'edit') {
 
+      bigPlayButton.style.visibility = 'hidden';
+
       recording = lastRecordingValue;
   
       timelinePlaying = false;
@@ -326,12 +330,14 @@ function init() {
 
     else {
 
+      bigPlayButton.style.visibility = 'visible';
+
       lastRecordingValue = recording;
 
       recording = true;
 
       timelinePosition = 0.0;
-      timelinePlaying = true;
+      timelinePlaying = false;
 
       if (typeof fireworks !== 'undefined') {
         fireworks.forEach(firework => {
@@ -359,7 +365,7 @@ function init() {
     body.style.setProperty('cursor', 'default');
   }
   documentationLink.onclick = function() {
-    
+    // Documentation
   }
 
   aboutLink.onmouseover = function() {
@@ -370,6 +376,17 @@ function init() {
   }
   aboutLink.onclick = function() {
     window.open("https://noahgunther.com");
+  }
+
+  bigPlayButton.onmouseover = function() {
+    body.style.setProperty('cursor', 'pointer');
+  }
+  bigPlayButton.onmouseout = function() {
+    body.style.setProperty('cursor', 'default');
+  }
+  bigPlayButton.onclick = function() {
+    bigPlayButton.style.visibility = 'hidden';
+    timelinePlaying = true;
   }
 
   /* Editor settings */
@@ -1235,6 +1252,8 @@ function init() {
   const fireworksParam = searchParams.get('f');
 
   // Create fireworks from searchparam
+  const fireworkTokenLength = 21;
+  var fireworksCreatedFromParam = 0;
   function createFireworksFromSearchParam(token, index) {
 
     function threeToRgb(three) {
@@ -1321,25 +1340,36 @@ function init() {
 
     }
 
+    let fireworkValid = true;
+
     const type = explosionTypeNames[parseInt(token.charAt(0))];
+    if (type == null) fireworkValid = false;
     const color0 = threeToRgb(token.substring(1, 4));
     const color1 = threeToRgb(token.substring(4, 7));
     const color2 = threeToRgb(token.substring(7, 10));
-    const scale = Number((parseInt(token.substring(10, 12)) * 0.1).toFixed(1));
+    const scale = Math.max(Math.min(Number((parseInt(token.substring(10, 12)) * 0.1).toFixed(1)), 3.0), 0.5);
+    if (scale == null) fireworkValid = false;
     const launchAudio = parseInt(token.charAt(12)) == 1 || parseInt(token.charAt(12)) == 3 ? true : false;
+    if (launchAudio == null) fireworkValid = false;
     const explosionAudio = parseInt(token.charAt(12)) > 1 ? true : false;
+    if (explosionAudio == null) fireworkValid = false;
     const positionX = token.charAt(13) == 'a' ? 100 : parseInt(token.substring(13, 15));
+    if (positionX == null || isNaN(positionX)) fireworkValid = false;
     const positionY = token.charAt(15) == 'a' ? 100 : parseInt(token.substring(15, 17));
+    if (positionY == null || isNaN(positionY)) fireworkValid = false;
     const time = Number((parseInt(token.substring(17, 22)) * 0.001).toFixed(3));
+    if (time == null || isNaN(time)) fireworkValid = false;
 
-    const terminalPointRaycast = new THREE.Raycaster();
-    const fireworkPagePosition = new THREE.Vector2((positionX / 100) * 2 - 1, (positionY / 100) * 2 - 1);
-    terminalPointRaycast.setFromCamera(fireworkPagePosition, camera);
-    const raycastIntersects = terminalPointRaycast.intersectObjects(interesectionObjects, true);
-    const intersectionPoint = raycastIntersects[0].point;
+    if (fireworkValid) {
 
-    createFirework(
-      index,
+      const terminalPointRaycast = new THREE.Raycaster();
+      const fireworkPagePosition = new THREE.Vector2((positionX / 100) * 2 - 1, (positionY / 100) * 2 - 1);
+      terminalPointRaycast.setFromCamera(fireworkPagePosition, camera);
+      const raycastIntersects = terminalPointRaycast.intersectObjects(interesectionObjects, true);
+      const intersectionPoint = raycastIntersects[0].point;
+    
+      createFirework(
+      fireworksCreatedFromParam,
       true,
       false,
       launchAudio,
@@ -1359,25 +1389,46 @@ function init() {
       color2,
       scale,
       new THREE.Vector2(positionX, positionY)
-    )
+      );
+
+      fireworksCreatedFromParam++;
+
+    }
 
   }
 
   if (fireworksParam != null) {
 
-    const fireworksFromParamCount = fireworksParam.length / 21;
+    const fireworksFromParamCount = Math.floor(fireworksParam.length / fireworkTokenLength);
 
     for (let i = 0; i < fireworksFromParamCount; i++) {
 
-      const fireworkString = fireworksParam.substring(i * 21, (i+1) * 21);
+      const fireworkString = fireworksParam.substring(i * fireworkTokenLength, (i+1) * fireworkTokenLength);
 
-      console.log(fireworkString);
+      if (fireworkString.length == fireworkTokenLength) {
     
-      createFireworksFromSearchParam(fireworkString, i);
+        createFireworksFromSearchParam(fireworkString, i);
+
+      }
+
+      if ((i+1) * fireworkTokenLength == fireworksFromParamCount * fireworkTokenLength) {
+
+        loadingScreen.style.visibility = 'hidden';
+
+        updateFireworksSearchParam();
+
+      }
 
     }
     
     toggleSiteMode();
+
+  }
+
+  else {
+
+    loadingScreen.style.visibility = 'hidden';
+    bigPlayButton.style.visibility = 'hidden';
 
   }
 
