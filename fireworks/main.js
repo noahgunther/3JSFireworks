@@ -104,6 +104,8 @@ function init() {
 
     composer.setSize(window.innerWidth, window.innerHeight);
 
+    updateFireworks(true);
+
   };
 
   /* Monitor mouse position */
@@ -168,6 +170,7 @@ function init() {
       color2,
       explosionScale,
       position,
+      aspectRatio,
       marker
     ) {
       this.id = id;
@@ -201,6 +204,7 @@ function init() {
       this.color2 = color2;
       this.explosionScale = explosionScale;
       this.position = position;
+      this.aspectRatio = aspectRatio;
       this.marker = marker;
     }
   }
@@ -1270,7 +1274,7 @@ function init() {
   const fireworksParam = searchParams.get('f');
 
   // Create fireworks from searchparam
-  const fireworkTokenLength = 21;
+  const fireworkTokenLength = 23;
   var fireworksCreatedFromParam = 0;
   var allFireworksValid = true;
   function createFireworksFromSearchParam(token, index) {
@@ -1376,16 +1380,26 @@ function init() {
     if (positionX == null || isNaN(positionX)) fireworkValid = false;
     const positionY = token.charAt(15) == 'a' ? 100 : parseInt(token.substring(15, 17));
     if (positionY == null || isNaN(positionY)) fireworkValid = false;
-    const time = Number((parseInt(token.substring(17, 22)) * 0.001).toFixed(3));
+    const aspectRatio = Number(parseInt(token.substring(17, 19)));
+    if (aspectRatio == null || isNaN(aspectRatio)) fireworkValid = false;
+    const time = Number((parseInt(token.substring(19, 24)) * 0.001).toFixed(3));
     if (time == null || isNaN(time)) fireworkValid = false;
 
     if (fireworkValid) {
 
       const terminalPointRaycast = new THREE.Raycaster();
-      const fireworkPagePosition = new THREE.Vector2((positionX / 100) * 2 - 1, (positionY / 100) * 2 - 1);
+
+      let terminalPointPageX = (positionX * 0.01) * 2.0 - 1.0;
+      let terminalPointPageY = (positionY * 0.01) * 2.0 - 1.0;
+
+      const currentAspectRatio = Math.round((window.innerWidth / window.innerHeight) * 10.0);
+      if (aspectRatio > currentAspectRatio) terminalPointPageY *= currentAspectRatio / aspectRatio;
+      else if (aspectRatio < currentAspectRatio) terminalPointPageX *= aspectRatio / currentAspectRatio;
+
+      const fireworkPagePosition = new THREE.Vector2(terminalPointPageX, terminalPointPageY);
       terminalPointRaycast.setFromCamera(fireworkPagePosition, camera);
       const raycastIntersects = terminalPointRaycast.intersectObjects(interesectionObjects, true);
-      const intersectionPoint = raycastIntersects[0].point;
+      const terminalPoint = raycastIntersects[0].point;
     
       createFirework(
       fireworksCreatedFromParam,
@@ -1398,7 +1412,7 @@ function init() {
       false,
       false,
       false,
-      new THREE.Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z),
+      terminalPoint,
       time * timelineLength,
       createProjectile(color0),
       null,
@@ -1407,7 +1421,8 @@ function init() {
       color1,
       color2,
       scale,
-      new THREE.Vector2(positionX, positionY)
+      new THREE.Vector2(positionX, positionY),
+      aspectRatio
       );
 
       fireworksCreatedFromParam++;
@@ -1600,6 +1615,12 @@ function init() {
         if (fireworkPositionY.length < 2) fireworkPositionY = '0' + fireworkPositionY;
         else if (fireworkPositionY.length > 2) fireworkPositionY = 'a0';
         thisFireworkToken += fireworkPositionX + fireworkPositionY;
+
+        // Created aspect ratio
+        let fireworkAspectRatio = firework.aspectRatio.toString();
+        if (fireworkAspectRatio.length < 2) fireworkAspectRatio = '0' + fireworkAspectRatio;
+        else if (fireworkAspectRatio.length > 2) fireworkAspectRatio = '99';
+        thisFireworkToken += fireworkAspectRatio;
 
         // Firework explosion time
         let fireworkTime = firework.explodeTime / timelineLength;
@@ -1804,7 +1825,8 @@ function init() {
         color1,
         color2,
         scaleValue,
-        new THREE.Vector2(terminalPointX, terminalPointY)
+        new THREE.Vector2(terminalPointX, terminalPointY),
+        Math.round((window.innerWidth / window.innerHeight) * 10.0)
       );
 
     }
@@ -1831,7 +1853,8 @@ function init() {
     color1, 
     color2,
     scale,
-    screenSpaceTerminalPoint
+    screenSpaceTerminalPoint,
+    aspectRatio
   ) {
 
     const launchDuration = 1000;
@@ -1947,6 +1970,7 @@ function init() {
         color2,
         scale,
         screenSpaceTerminalPoint,
+        aspectRatio,
         marker
       );
 
@@ -2020,10 +2044,17 @@ function init() {
       firework.color1,
       firework.color2,
       firework.explosionScale,
-      firework.position
+      firework.position,
+      firework.aspectRatio
     );
 
-    requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+    requestAnimationFrame(function() {
+
+      if (!timelinePlaying) updateFireworks(true);
+      
+      afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; 
+    
+    });
 
   }
 
@@ -2108,12 +2139,16 @@ function init() {
 
   function updateTerminalPosition(index) {
 
-    const terminalPointPageX = (fireworks[index].position.x * 0.01) * 2.0 - 1.0;
-    const terminalPointPageY = (fireworks[index].position.y * 0.01) * 2.0 - 1.0;
+    let terminalPointPageX = (fireworks[index].position.x * 0.01) * 2.0 - 1.0;
+    let terminalPointPageY = (fireworks[index].position.y * 0.01) * 2.0 - 1.0;
+
+    const currentAspectRatio = Math.round((window.innerWidth / window.innerHeight) * 10.0);
+    if (fireworks[index].aspectRatio > currentAspectRatio) terminalPointPageY *= currentAspectRatio / fireworks[index].aspectRatio;
+    else if (fireworks[index].aspectRatio < currentAspectRatio) terminalPointPageX *= fireworks[index].aspectRatio / currentAspectRatio;
     
-    const originPointRayCast = new THREE.Raycaster();
-    originPointRayCast.setFromCamera(new THREE.Vector2(terminalPointPageX, terminalPointPageY), camera);
-    const raycastIntersects = originPointRayCast.intersectObjects(interesectionObjects, true);
+    const terminalPointRayCast = new THREE.Raycaster();
+    terminalPointRayCast.setFromCamera(new THREE.Vector2(terminalPointPageX, terminalPointPageY), camera);
+    const raycastIntersects = terminalPointRayCast.intersectObjects(interesectionObjects, true);
 
     return raycastIntersects[0].point;
 
