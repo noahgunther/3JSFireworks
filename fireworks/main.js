@@ -990,27 +990,44 @@ function init() {
     if (timelineDisplaySeconds < 10) timelineDisplaySeconds = "0" + timelineDisplaySeconds;
     timelineLengthDisplayValue.innerHTML = "0" + timelineDisplayMinutes + ":" + timelineDisplaySeconds;
 
-    if (timelinePosition > timelineLength) timelinePosition = timelineLength;
+    if (timelinePosition > timelineLength) {
 
-    if (typeof fireworks !== 'undefined' && fireworks != null) {
-      fireworks.forEach(firework => {
-        if (firework.recorded) {
-          if (firework.explodeTime <= timelineLength) {
-            firework.marker.style.visibility = "visible";
-            firework.marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
-          }
-          else {
-            const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
-            afterimagePass.uniforms['damp'].value = 0.0;
-            if (!timelinePlaying) updateFireworks(false);
-            firework.marker.style.visibility = "hidden";
-            requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
-          }
-        }
-      });
+      const lastAfterImageDampValue = afterimagePass.uniforms['damp'].value;
+      afterimagePass.uniforms['damp'].value = 0.0;
+      
+      timelinePosition = timelineLength;
+
+      if (!timelinePlaying) updateFireworks(false);
+
+      requestAnimationFrame(function() { afterimagePass.uniforms['damp'].value = lastAfterImageDampValue; });
+
     }
-
     updateTimelinePositionMarker();
+
+    timelineMarkersWrapper.innerHTML = '';
+    if (typeof fireworks !== 'undefined' && fireworks != null) {
+
+      fireworks.forEach(firework => {
+
+        if (firework.recorded) {
+
+          const marker = document.createElement('marker');
+          marker.className = 'timelinemarker';
+          marker.style.setProperty('left', (firework.explodeTime / timelineLength) * 100.0 + '%');
+          marker.style.setProperty('background-color', rgbToHex(Math.floor(firework.color0.r * 255), Math.floor(firework.color0.g * 255), Math.floor(firework.color0.b * 255)));
+          firework.marker = marker;
+          timelineMarkersWrapper.appendChild(marker);
+          
+          
+          if (firework.explodeTime > timelineLength) {
+            marker.style.visibility = "hidden";
+          }
+
+        }
+
+      });
+
+    }
 
     if (!timelinePlaying) updateOutlinerData();
 
