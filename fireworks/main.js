@@ -1225,6 +1225,7 @@ function init() {
   /* Url search params */
   const url = new URL(window.location);
   const urlOrigin = url.origin;
+  const urlPathname = url.pathname;
   const searchParams = url.searchParams;
 
   // Loop once or forever param
@@ -1561,7 +1562,7 @@ function init() {
 
   // Update url with params
   function updateUrlHistory() {
-    window.history.replaceState({}, "Fireworks!", urlOrigin + "/?" + searchParams);
+    window.history.replaceState({}, "Fireworks!", urlOrigin + urlPathname + "?" + searchParams);
   }
   updateUrlHistory();
 
