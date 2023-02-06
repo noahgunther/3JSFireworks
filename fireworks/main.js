@@ -1272,6 +1272,7 @@ function init() {
   // Create fireworks from searchparam
   const fireworkTokenLength = 21;
   var fireworksCreatedFromParam = 0;
+  var allFireworksValid = true;
   function createFireworksFromSearchParam(token, index) {
 
     function threeToRgb(three) {
@@ -1413,6 +1414,12 @@ function init() {
 
     }
 
+    else {
+
+      allFireworksValid = false;
+
+    }
+
   }
 
   if (fireworksParam != null) {
@@ -1435,11 +1442,51 @@ function init() {
 
         updateFireworksSearchParam();
 
+        if (!allFireworksValid) {
+
+          warningOverlay.style.visibility = 'visible';
+
+          warningText.innerHTML = "WARNING: Not all fireworks loaded were valid. Continue?";
+
+          warningAcceptButton.onmouseover = function() {
+            body.style.setProperty('cursor', 'pointer');
+          }
+          warningAcceptButton.onmouseout = function() {
+            body.style.setProperty('cursor', 'default');
+          }
+          warningAcceptButton.onclick = function() {
+            warningOverlay.style.visibility = 'hidden';
+            body.style.setProperty('cursor', 'default');
+            toggleSiteMode();
+          }
+
+          warningCancelButton.onmouseover = function() {
+            body.style.setProperty('cursor', 'pointer');
+          }
+          warningCancelButton.onmouseout = function() {
+            body.style.setProperty('cursor', 'default');
+          }
+          warningCancelButton.onclick = function() {
+            fireworks.forEach(firework => {
+              removeFirework(firework);
+            });
+            timelineMarkersWrapper.innerHTML = '';
+            fireworks = [];
+            warningOverlay.style.visibility = 'hidden';
+            body.style.setProperty('cursor', 'default');
+            updateFireworksSearchParam();
+            bigPlayButton.style.visibility = 'hidden';
+          }
+
+        }
+
+        else {
+          toggleSiteMode();
+        }
+
       }
 
     }
-    
-    toggleSiteMode();
 
   }
 
