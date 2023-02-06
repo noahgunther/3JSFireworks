@@ -185,7 +185,7 @@ body{
   left: 50%;
   transform: translate(-50%, -50%);
   width: max(20%, 300px);
-  height: 20%;
+  height: max(20%, 200px);
   background-color: white;
   border-radius: 2em;
 }

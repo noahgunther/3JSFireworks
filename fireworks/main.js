@@ -2105,8 +2105,9 @@ function init() {
       }
 
       else if (
-      ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && k < 1.2 && !skipToEnd) 
-      || (timelinePosition == 0.0 && k >= 1.0 && recording)) {
+        ((!fireworks[index].launchCompleted || fireworks[index].playLaunchOneShot) && k > 0.0 && k < 1.2 && !skipToEnd) 
+        || (timelinePosition == 0.0 && k >= 1.0 && recording) || (timelinePosition == fireworks[index].explodeTime && !timelinePlaying)
+      ) {
 
         fireworks[index].launchCompleted = true;
         fireworks[index].playLaunchOneShot = false;
