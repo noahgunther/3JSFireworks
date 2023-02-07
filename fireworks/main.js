@@ -303,7 +303,7 @@ function init() {
     afterimagePass.uniforms['damp'].value = 0.0;
 
     siteMode = siteMode == 'edit' ? 'playback' : 'edit';
-    toggleSiteModeLink.innerHTML = siteMode == 'edit' ? 'PLAYBACK MODE' : 'EDIT MODE';
+    toggleSiteModeLink.innerHTML = siteMode == 'edit' ? '<div class="centertext">PLAYBACK MODE</div>' : '<div class="centertext">EDIT MODE</div>';
 
     if (siteMode == 'edit') {
 
@@ -732,11 +732,11 @@ function init() {
           fireworkData.appendChild(fireworkDataColor0Input);
 
           const fireworkDataColor1Input = document.createElement('fireworkdatacolor1input');
-          fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 60%">';
+          fireworkDataColor1Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 65%">';
           fireworkData.appendChild(fireworkDataColor1Input);
 
           const fireworkDataColor2Input = document.createElement('fireworkdatacolor2input');
-          fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 70%">';
+          fireworkDataColor2Input.innerHTML = '<input class="fireworkdatacolorpicker" type="color" style="left: 80%">';
           fireworkData.appendChild(fireworkDataColor2Input);
 
           const color0Input = fireworkDataColor0Input.children[0];
