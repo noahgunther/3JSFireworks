@@ -245,7 +245,7 @@ body{
 
 #mainmenu {
   position: absolute;
-  top: max(6%, 60px);
+  top: max(6%, 30px);
   left: 5%;
   height: min(23%, 360px);
   width: min(max(14%, 160px), 360px);
@@ -584,7 +584,7 @@ body{
 
 #outliner {
   position: absolute;
-  top: max(6%, 60px);
+  top: max(6%, 30px);
   right: 5%;
   height: min(69.25%, 8060px);;
   width: min(max(14%, 160px), 360px);
