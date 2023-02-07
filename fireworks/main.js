@@ -1774,22 +1774,26 @@ function init() {
 
   canvas.onmousedown = function() {
 
-    if (siteMode == 'edit') {
+    if (!mouseDown) {
 
-      if (randomizeTypeBool) explosionType = randomizeExplosionType();
-      if (randomizeColorBool) {  
-        color0 = randomizeColor();
-        color1 = randomizeColor();
-        color2 = randomizeColor();
-        updateColorPickers();
+      if (siteMode == 'edit') {
+
+        if (randomizeTypeBool) explosionType = randomizeExplosionType();
+        if (randomizeColorBool) {  
+          color0 = randomizeColor();
+          color1 = randomizeColor();
+          color2 = randomizeColor();
+          updateColorPickers();
+        }
+        if (randomizeScaleBool) scaleValue = randomizeScale();
+
+        currentProjectile = createProjectile(color0);
+
+        currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+
+        mouseDown = true;
+
       }
-      if (randomizeScaleBool) scaleValue = randomizeScale();
-
-      currentProjectile = createProjectile(color0);
-
-      currentProjectile.position.set(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
-
-      mouseDown = true;
 
     }
 
