@@ -889,6 +889,35 @@ function init() {
           fireworkDataPosition.innerHTML = "X: " + firework.position.x + ", Y: " + firework.position.y;
           fireworkData.appendChild(fireworkDataPosition);
 
+          // Firework audio
+          const fireworkDataAudioLabel = document.createElement('fireworkdataaudiolabel');
+          fireworkDataAudioLabel.className = 'fireworkdataaudiolabel';
+          fireworkDataAudioLabel.innerHTML = "Audio: ";
+          fireworkData.appendChild(fireworkDataAudioLabel);
+
+          const fireworkDataLaunchAudioToggleWrapper = document.createElement('fireworkdatalaunchaudiotoggle');
+          fireworkDataLaunchAudioToggleWrapper.innerHTML = '<label for="fireworkdatalaunchaudiotoggle" class="fireworkdatalaunchaudiolabel">Launch</label><input id="fireworkdatalaunchaudiotoggle" class="fireworkdatalaunchaudiotoggle" type="checkbox">';
+          fireworkData.appendChild(fireworkDataLaunchAudioToggleWrapper);
+
+          const fireworkDataExplosionAudioToggleWrapper = document.createElement('fireworkdataexplosionaudiotoggle');
+          fireworkDataExplosionAudioToggleWrapper.innerHTML = '<label for="fireworkdataexplosionaudiotoggle" class="fireworkdataexplosionaudiolabel">Explosion</label><input id="fireworkdataexplosionaudiotoggle" class="fireworkdataexplosionaudiotoggle" type="checkbox">';
+          fireworkData.appendChild(fireworkDataExplosionAudioToggleWrapper);
+
+          const fireworkDataLaunchAudioToggle = fireworkDataLaunchAudioToggleWrapper.children[1];
+          fireworkDataLaunchAudioToggle.checked = firework.launchAudioToggle;
+
+          const fireworkDataExplosionAudioToggle = fireworkDataExplosionAudioToggleWrapper.children[1];
+          fireworkDataExplosionAudioToggle.checked = firework.explosionAudioToggle;
+
+          fireworkDataLaunchAudioToggle.addEventListener("change", function() {
+            firework.launchAudioToggle = fireworkDataLaunchAudioToggle.checked;
+            updateFireworksSearchParam();
+          });
+          fireworkDataExplosionAudioToggle.addEventListener("change", function() {
+            firework.explosionAudioToggle = fireworkDataExplosionAudioToggle.checked;
+            updateFireworksSearchParam();
+          });
+
           // Remove firework
           const removeFireworkButton = document.createElement('removefireworkbutton');
           removeFireworkButton.className = 'removefireworkbutton';

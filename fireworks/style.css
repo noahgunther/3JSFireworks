@@ -642,7 +642,7 @@ body{
   float: left;
   float: top;
   width: 100%;
-  height: 15%;
+  height: 25%;
   border-bottom: .3vh dashed rgb(128, 128, 128);
   color: rgb(128, 128, 128);
   overflow: hidden;
@@ -651,7 +651,7 @@ body{
 .fireworkdatatypelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 15%;
+  top: 10%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -660,8 +660,8 @@ body{
   position: absolute;
   transform: translate(0%, -50%);
   width: 30%;
-  height: min(25%, 25px);
-  top: 15%;
+  height: min(20%, 25px);
+  top: 10%;
   left: 50%;
   font-size: min(max(0.6vw, 40%), 100%);
   cursor: pointer;
@@ -670,7 +670,7 @@ body{
 .fireworkdatacolorslabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 40%;
+  top: 30%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -678,9 +678,9 @@ body{
 .fireworkdatacolorpicker {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 40%;
+  top: 30%;
   width: max(10%, 22px);
-  height: 20%;
+  height: 15%;
   padding: 0px;
   cursor: pointer;
 }
@@ -688,7 +688,7 @@ body{
 .fireworkdatascalelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 65%;
+  top: 50%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -696,7 +696,7 @@ body{
 .fireworkdatascale {
   position: absolute;
   transform: translate(-50%, -50%);
-  top: 66%;
+  top: 50%;
   font-size: max(0.75vw, 90%);
   font-weight: bold;
 }
@@ -716,7 +716,7 @@ body{
 .fireworkdatapositionlabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 90%;
+  top: 70%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -724,14 +724,58 @@ body{
 .fireworkdataposition {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 90%;
+  top: 70%;
   left: 50%;
   font-size: max(0.75vw, 70%);
 }
 
+.fireworkdataaudiolabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 90%;
+  left: 10%;
+  font-size: max(0.75vw, 70%);
+}
+
+.fireworkdatalaunchaudiolabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 82%;
+  left: 50%;
+  font-size: max(0.5vw, 40%);
+}
+
+.fireworkdataexplosionaudiolabel {
+  position: absolute;
+  transform: translate(0%, -50%);
+  top: 82%;
+  left: 70%;
+  font-size: max(0.5vw, 40%);
+}
+
+.fireworkdatalaunchaudiotoggle {
+  position: absolute;
+  width: max(1.5vmin, 10px);
+  height: max(1.5vmin, 10px);
+  top: 90%;
+  left: 55%;
+  transform: translate(0%, -50%);
+  cursor: pointer;
+}
+
+#fireworkdataexplosionaudiotoggle {
+  position: absolute;
+  width: max(1.5vmin, 10px);
+  height: max(1.5vmin, 10px);
+  top: 90%;
+  left: 75%;
+  transform: translate(0%, -50%);
+  cursor: pointer;
+}
+
 .removefireworkbutton {
   position: absolute;
-  top: 16%;
+  top: 10%;
   right: 3%;
   width: 10%;
 }
