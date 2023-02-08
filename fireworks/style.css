@@ -23,6 +23,15 @@ body{
   color: white;
 }
 
+.windowcontents {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - max(3.5vh, 30px));
+  top: max(3.5vh, 30px);
+  left: 0;
+  overflow: hidden;
+}
+
 .centertext {
   position: absolute;
   width: 100%;
@@ -69,8 +78,8 @@ body{
   position: absolute;
   top: 1%;
   left: 1%;
-  width: max(3%, 50px);
-  padding-bottom: max(3%, 50px);
+  width: max(3%, 25px);
+  padding-bottom: max(3%, 25px);
 }
 
 #toggleuibuttontop {
@@ -159,7 +168,7 @@ body{
   position: absolute;
   top: 1%;
   right: 1%;
-  width: max(3%, 50px);
+  width: max(3%, 25px);
   user-select: none;
 }
 
@@ -348,34 +357,36 @@ body{
 #recordlabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 50%;
+  top: 25%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
 #recordtoggle {
   position: absolute;
-  width: 10%;
-  top: 44%;
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 25%;
   margin-left: 60%;
-  transform: scale(1.5);
+  transform: translate(0%, -50%);
   cursor: pointer;
 }
 
 #nightskylabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 75%;
+  top: 70%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
 #nightskytoggle {
   position: absolute;
-  width: 10%;
-  top: 69%;
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 70%;
   margin-left: 60%;
-  transform: scale(1.5);
+  transform: translate(0%, -50%);
   cursor: pointer;
 }
 
@@ -407,71 +418,80 @@ body{
 #randomparamslabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 22%;
+  top: 10%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
 #randomtypelabel {
   position: absolute;
-  top: 14%;
+  transform: translate(0%, -50%);
+  top: 2%;
   left: 50%;
-  font-size: max(0.5vw, 50%);
+  font-size: max(0.5vw, 40%);
 }
 
 #randomcolorlabel {
   position: absolute;
-  top: 14%;
+  transform: translate(0%, -50%);
+  top: 2%;
   left: 65%;
-  font-size: max(0.5vw, 50%);
+  font-size: max(0.5vw, 40%);
 }
 
 #randomscalelabel {
   position: absolute;
-  top: 14%;
+  transform: translate(0%, -50%);
+  top: 2%;
   left: 80%;
-  font-size: max(0.5vw, 50%);
+  font-size: max(0.5vw, 40%);
 }
 
 #randomtypetoggle {
   position: absolute;
-  width: 10%;
-  top: 20%;
-  margin-left: 50%;
-  transform: scale(1.5);
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 10%;
+  margin-left: 55%;
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
 #randomcolortoggle {
   position: absolute;
-  width: 10%;
-  top: 20%;
-  margin-left: 65%;
-  transform: scale(1.5);
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 10%;
+  margin-left: 70%;
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
 #randomscaletoggle {
   position: absolute;
-  width: 10%;
-  top: 20%;
-  margin-left: 80%;
-  transform: scale(1.5);
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 10%;
+  margin-left: 85%;
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
 #typelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 36%;
+  top: 30%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
 #explosiontype {
   position: absolute;
-  top: 34%;
+  transform: translate(0%, -50%);
+  top: 30%;
   width: 40%;
+  height: min(14%, 25px);
+  font-size: min(max(0.75vw, 50%), 100%);
   margin-left: 50%;
   cursor: pointer;
 }
@@ -489,7 +509,8 @@ body{
   top: 50%;
   transform: translate(0%, -50%);
   width: max(10%, 25px);
-  height: 10%;
+  height: 12%;
+  padding: 0px;
   cursor: pointer;
 }
 
@@ -508,7 +529,7 @@ body{
 #scalelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 66%;
+  top: 70%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -517,7 +538,7 @@ body{
   position: absolute;
   transform: translate(-50%, -50%);
   left: 50%;
-  top: 66%;
+  top: 70%;
   font-size: max(1.0vw, 90%);
   font-weight: bold;
 }
@@ -526,7 +547,7 @@ body{
   position: absolute;
   transform: translate(-50%, -50%);
   left: 63%;
-  top: 66%;
+  top: 70%;
   font-size: max(1.0vw, 90%);
   font-weight: bold;
 }
@@ -535,7 +556,7 @@ body{
   position: absolute;
   transform: translate(-50%, -50%);
   left: 76%;
-  top: 66%;
+  top: 70%;
   font-size: max(1.0vw, 90%);
   font-weight: bold;
 }
@@ -543,40 +564,44 @@ body{
 #audiolabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 83%;
+  top: 90%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
 
 #launchaudiolabel {
   position: absolute;
-  top: 74%;
+  transform: translate(0%, -50%);
+  top: 82%;
   left: 50%;
-  font-size: max(0.5vw, 50%);
+  font-size: max(0.5vw, 40%);
 }
 
 #explosionaudiolabel {
   position: absolute;
-  top: 74%;
+  transform: translate(0%, -50%);
+  top: 82%;
   left: 70%;
-  font-size: max(0.5vw, 50%);
+  font-size: max(0.5vw, 40%);
 }
 
 #launchaudiotoggle {
   position: absolute;
-  width: 10%;
-  top: 80%;
-  left: 50%;
-  transform: scale(1.5);
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 90%;
+  left: 55%;
+  transform: translate(0%, -50%);
   cursor: pointer;
 }
 
 #explosionaudiotoggle {
   position: absolute;
-  width: 10%;
-  top: 80%;
-  left: 70%;
-  transform: scale(1.5);
+  width: max(1.5vmin, 14px);
+  height: max(1.5vmin, 14px);
+  top: 90%;
+  left: 75%;
+  transform: translate(0%, -50%);
   cursor: pointer;
 }
 
@@ -620,12 +645,13 @@ body{
   height: 15%;
   border-bottom: .3vh dashed rgb(128, 128, 128);
   color: rgb(128, 128, 128);
+  overflow: hidden;
 }
 
 .fireworkdatatypelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 16%;
+  top: 15%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }
@@ -634,8 +660,10 @@ body{
   position: absolute;
   transform: translate(0%, -50%);
   width: 30%;
-  top: 16%;
-  margin-left: 50%;
+  height: min(25%, 25px);
+  top: 15%;
+  left: 50%;
+  font-size: min(max(0.6vw, 40%), 100%);
   cursor: pointer;
 }
 
@@ -653,13 +681,14 @@ body{
   top: 40%;
   width: max(10%, 22px);
   height: 20%;
+  padding: 0px;
   cursor: pointer;
 }
 
 .fireworkdatascalelabel {
   position: absolute;
   transform: translate(0%, -50%);
-  top: 66%;
+  top: 65%;
   left: 10%;
   font-size: max(0.75vw, 70%);
 }

@@ -35,6 +35,7 @@ function init() {
 
   /* Initialize main scene */
   const body = document.getElementById('body');
+  body.style.visibility = 'visible';
   const loadingScreen = document.getElementById('loadingbackground');
 
   const scene = new THREE.Scene();
