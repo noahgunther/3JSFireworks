@@ -370,7 +370,7 @@ function init() {
     body.style.setProperty('cursor', 'default');
   }
   documentationLink.onclick = function() {
-    // Documentation
+    window.open("./documentation/index.html");
   }
 
   aboutLink.onmouseover = function() {
