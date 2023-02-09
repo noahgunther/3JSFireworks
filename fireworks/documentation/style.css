@@ -4,6 +4,10 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+hr {
+  clear: left;
+}
+
 h {
   font-size: min(max(3vw, 160%), 600%);
 }
@@ -19,6 +23,12 @@ p {
   font-size: min(max(1.2vw, 100%), 300%);
 }
 
+img {
+  width: max(25%, 130px);
+  float: left;
+  padding: 2%;
+}
+
 #header {
   position: absolute;
   top: 0;
@@ -29,6 +39,8 @@ p {
   font-size: min(max(3vw, 160%), 600%);
   font-weight: 400;
   color: white;
+  background-image: url('./graphics/headerbackground.png');
+  background-size: 100%;
   background-color: black;
 }
 
@@ -45,4 +57,10 @@ p {
   top: 50%;
   left: 50%;
   width: min(max(50%, 300px), 1920px);
+}
+
+#timelineimage {
+  width: 100%;
+  padding-left: 0px;
+  padding-top: 0px;
 }
