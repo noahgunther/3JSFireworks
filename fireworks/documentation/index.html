@@ -2,12 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="../graphics/icon.png" />
+    <link rel="icon" type="image/svg+xml" href="./graphics/icon.png" />
     <link rel="stylesheet" href="./style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fireworks Documentation</title>
   </head>
   <body id="body">
-    <div>Hello World</div>
+    <div id="header">
+      <div id="headertext">
+        Fireworks! (Documentation)
+      </div>
+    </div>
+    <div id="content">
+      <h>Intro</h>
+      <p>Welcome to the documentation for my <a href="https://noahgunther.com/fireworks">Three.js based firework site</a>. The purpose of this documentation page is to provide context for the site and describe how the tools on the site can be used to create and share your own firework shows.<br/><br/>
+      This site was created using Javascript with Three.js. If you're interested in looking or experimenting with the code, <a href="https://github.com/noahgunther/3JSFireworks">it's available here</a>. A couple years ago, I made a <a href="https://noahgunther.wordpress.com/2021/01/01/interactive-houdini-fireworks">Houdini tool for creating fireworks with mouse clicks</a>. I built this site because I wanted to enable people to do the same thing in a realtime interactive setting on the web, and found Three.js was extremely flexible as far as creating the geometry for the fireworks and creating a timeline-based editing system.</p>
+      <h>Getting Started</h>
+      <p>When you first visit the website, by default you should see a starry night sky with a handful of menus available to interact with. [IMAGE] Click anywhere in the night sky to create a firework! The firework will launch toward the point you clicked and explode when it reaches it. In this mode, the fireworks won't be recorded - this is just a testing ground to launch as many fireworks as you'd like and play with the settings. [IMAGE]<br/><br/>If when you load the site you instead see a big play button, that means you loaded a URL that already contains a firework show! Press play to watch the show, and press the button in the upper left at any time to share or edit the show. [IMAGE]</p>
+      <h>User Interface</h>
+      <h1>Toggling the UI</h1>
+      <p>[IMAGE] The button in the upper left can be pressed at any time to hide / show the various interface elements on the site. By default, the UI will be visible when you first load the site.</p>
+      <h1>The Main Menu</h1>
+      <p>[IMAGE] The menu in the upper left, or the main menu, has a handful of basic functions. The first, "Share this show" copies the current URL to the clipboard. This is how you can share a custom firework show with someone, or save a show you've created for later. More on this later. [IMAGE]<br/><br/>The second option, "Playback mode" will switch the site from edit to playback mode, where you can view a recorded show without distractions. In playback mode, this button will be labeled "Edit mode" and return to edit mode. When the site finds fireworks in the URL as it's loading, "Playback mode" will be enabled by default. [IMAGE]<br/><br/>The third option, labeled "Documentation" will take you to this page, and the fourth option, "About me," will take you to <a href="https://noahgunther.com">my portfolio site</a>, which was also created using Three.js.</p>
+      <h1>Editor Settings</h1>
+      <p>[IMAGE] The editor settings menu has just two options, "Record Mode" and "Night Sky." The record mode option enables recording - if you toggle on record mode, you'll see a timeline appear across the bottom of the screen and another menu, labeled "On this frame," appear on the right. [IMAGE] Record mode is how you can create a custom firework show that will be saved for later. If you click anywhere in the sky in record mode, you'll see that a static firework is created in the 3D space, an entry for it is added to "On this frame," and a marker for it is added to the timeline. [IMAGE]<br/><br/>The other setting, "Night Sky," is much simpler; it toggles the background of stars on and off. There is a corresponding URL parameter for this option, meaning that if you share a show with someone, the sky will be enabled or disabled depending on how you set this option. [IMAGE]</p>
+      <h1>Next Firework</h1>
+      <p>[IMAGE]</p>
+      <h1>The Timeline</h1>
+      <p>[IMAGE]</p>
+      <h1>On This Frame</h1>
+      <p>[IMAGE]</p>
+      <h>Creating a show</h>
+      <p></p>
+      <h>Sharing or saving a show</h>
+      <p></p>
+      <h>Thanks!</h>
+      <p>Thanks for your interest in this site - I hope you have fun with it and share some amazing firework displays with some people in your life. If you have any questions or comments I can be reached at noah.gunther@gmail.com. Feel free to check out the <a href="https://github.com/noahgunther/3JSFireworks">source code for this site</a> if you're interested.</p>
+      <br/><br/><p style="text-align: center;">© 2023 Noah Gunther</p>
+    </div>
   </body>
 </html>

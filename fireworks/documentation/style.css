@@ -1,5 +1,48 @@
-/* General */
+body {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-body{
-  overflow: hidden;
+h {
+  font-size: min(max(3vw, 160%), 600%);
+}
+
+h1 {
+  font-size: min(max(2vw, 120%), 400%);
+  font-weight: 600;
+  color: rgb(128, 128, 128);
+}
+
+
+p {
+  font-size: min(max(1.2vw, 100%), 300%);
+}
+
+#header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: min(40%, 500px);
+  text-align: center;
+  font-size: min(max(3vw, 160%), 600%);
+  font-weight: 400;
+  color: white;
+  background-color: black;
+}
+
+#headertext {
+  position: absolute;
+  width: 100%;
+  transform: translate(0%, -50%);
+  top: 50%;
+}
+
+#content {
+  position: absolute;
+  transform: translate(-50%, 0%);
+  top: 50%;
+  left: 50%;
+  width: min(max(50%, 300px), 1920px);
 }
