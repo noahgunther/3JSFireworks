@@ -20,7 +20,7 @@ h1 {
 
 
 p {
-  font-size: min(max(1.2vw, 100%), 300%);
+  font-size: min(max(1.0vw, 100%), 200%);
 }
 
 img {
