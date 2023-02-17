@@ -16,6 +16,7 @@ h1 {
   font-size: min(max(2vw, 120%), 400%);
   font-weight: 600;
   color: rgb(128, 128, 128);
+  clear: left;
 }
 
 
